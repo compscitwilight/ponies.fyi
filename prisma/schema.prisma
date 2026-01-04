@@ -1,0 +1,114 @@
+datasource db {
+    provider = "postgresql"
+}
+
+generator client {
+    provider = "prisma-client"
+    output   = "../src/generated/"
+}
+
+enum PonysonaStatus {
+    Pending
+    Approved
+    Hidden
+}
+
+model Ponysona {
+    id          String                        @id @default(uuid())
+    slug        String                        @unique
+    originalId  String? /* used by ponysonas that are derivative forms of another */
+    primaryName String
+    otherNames  String[]
+    description String?
+    status      PonysonaStatus                @default(Pending)
+    tagIds      Int[] /* reference PonysonaTag */
+    sources     String[]
+    creators    String[]
+    colorsHex   String[]
+    colorsName  String[]
+    revisions   PonysonaRevision[]
+    attributes  PonysonaAppearanceAttribute[]
+    derivatives Ponysona[]                    @relation("derivatives")
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    original Ponysona? @relation(name: "derivatives", fields: [originalId], references: [id])
+}
+
+enum BodyPart {
+    mane
+    tail
+    coat
+    wings
+    horn
+    eyes
+}
+
+enum Color {
+    black
+    white
+    gray
+    brown
+    red
+    orange
+    yellow
+    green
+    blue
+    purple
+    pink
+}
+
+enum ColorTone {
+    light
+    dark
+    pale
+    bright
+}
+
+enum Pattern {
+    striped
+    streak
+    spotted
+}
+
+model PonysonaAppearanceAttribute {
+    id         String     @id @default(uuid())
+    ponysonaId String
+    bodyPart   BodyPart
+    color      Color?
+    colorTone  ColorTone?
+    pattern    Pattern?
+
+    ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([ponysonaId, bodyPart, color, colorTone, pattern])
+}
+
+model PonysonaRevision {
+    id         String @id @default(uuid())
+    ponysonaId String
+
+    diff     Int
+    snapshot Json
+
+    createdAt DateTime @default(now())
+    ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])
+}
+
+enum TagType {
+    species
+    form
+    role
+    setting
+    genre
+    trait
+}
+
+model PonysonaTag {
+    id   Int     @id @default(autoincrement())
+    name String  @unique
+    type TagType
+}
