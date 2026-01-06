@@ -12,6 +12,15 @@ export default async function HomePage({ searchParams }: {
   const itemsPerPage = 50;
 
   const ponysonas = await prisma.ponysona.findMany({
+    where: {
+      ...(query && {
+        OR: [
+          { primaryName: { contains: query, mode: "insensitive" } },
+          { otherNames: { has: query } },
+          { description: { contains: query, mode: "default" } }
+        ]
+      })
+    },
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * itemsPerPage,
     take: itemsPerPage

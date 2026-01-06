@@ -13,7 +13,7 @@ interface PonysonaAttributePayload {
 
 export default function CreatePage() {
     const [primaryName, setPrimaryName] = useState<string>();
-    const [otherNames, setOtherNames] = useState<string>();
+    const [otherNames, setOtherNames] = useState<Array<string>>(new Array<string>());
     const [description, setDescription] = useState<string>();
     const [tagIds, setTagIds] = useState<Array<number>>(new Array<number>());
     const [sources, setSources] = useState<Array<string>>(new Array<string>());
@@ -30,6 +30,7 @@ export default function CreatePage() {
     }>>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
+    const [otherNameVal, setOtherNameVal] = useState<string>();
     const [submitError, setSubmitError] = useState<string>();
 
     function onFormSubmit(ev: FormEvent) {
@@ -63,6 +64,17 @@ export default function CreatePage() {
             })
     }
 
+    function addOtherName() {
+        if (!otherNameVal) return;
+        setOtherNames(on => [...on, otherNameVal]);
+        setOtherNameVal(undefined);
+    }
+
+    function removeOtherName(name: string) {
+        if (!otherNames.includes(name)) return;
+        setOtherNames(on => on.filter((e: string) => e !== name));
+    }
+
     return (
         <div>
             <h1 className="text-3xl font-bold">Submit a ponysona</h1>
@@ -81,8 +93,10 @@ export default function CreatePage() {
                         <div>
 
                         </div>
-                        <label className="font-bold">Other names</label>
-                        <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
+                        <form>
+                            <label className="font-bold">Other names</label>
+                            <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
+                        </form>
                     </div>
                 )}
                 <div className="grid gap-1">
