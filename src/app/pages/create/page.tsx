@@ -2,14 +2,17 @@
 
 import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
-import { Color, ColorTone, Pattern, Ponysona } from "@/generated/client";
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
+import { Color, ColorTone, Pattern, Ponysona, PonysonaTag } from "@/generated/client";
+import { Asterisk } from "lucide-react";
 
 interface PonysonaAttributePayload {
     color: Color,
     tone: ColorTone,
     pattern: Pattern
 }
+
+const RequiredAsterisk = () => <Asterisk size={18} className="text-red-400" />;
 
 export default function CreatePage() {
     const [primaryName, setPrimaryName] = useState<string>();
@@ -30,7 +33,8 @@ export default function CreatePage() {
     }>>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
-    const [otherNameVal, setOtherNameVal] = useState<string>();
+    const [otherNameVal, setOtherNameVal] = useState<string>("");
+    const [availableTags, setAvailableTags] = useState<Array<PonysonaTag>>(new Array<PonysonaTag>());
     const [submitError, setSubmitError] = useState<string>();
 
     function onFormSubmit(ev: FormEvent) {
@@ -67,7 +71,7 @@ export default function CreatePage() {
     function addOtherName() {
         if (!otherNameVal) return;
         setOtherNames(on => [...on, otherNameVal]);
-        setOtherNameVal(undefined);
+        setOtherNameVal("");
     }
 
     function removeOtherName(name: string) {
@@ -75,13 +79,30 @@ export default function CreatePage() {
         setOtherNames(on => on.filter((e: string) => e !== name));
     }
 
+    useEffect(() => {
+        fetch("/api/tags", { method: "GET" })
+            .then((response) => response.json())
+            .then((json: any) => {
+                if (json.message) {
+                    console.warn(`Failed to retrieve tags: ${json.message}`);
+                    return;
+                }
+
+                const tagResults = json as Array<PonysonaTag>;
+                setAvailableTags(tagResults);
+            })
+    }, [setAvailableTags])
+
     return (
         <div>
             <h1 className="text-3xl font-bold">Submit a ponysona</h1>
             <hr className="h-px my-2 border-0 bg-gray-300" />
-            <form onSubmit={onFormSubmit} className="flex flex-col">
+            <form onSubmit={onFormSubmit} className="flex flex-col gap-2">
                 <div className="grid gap-1">
-                    <label className="font-bold">Primary name</label>
+                    <div className="flex gap-1">
+                        <label className="font-bold">Primary name</label>
+                        <RequiredAsterisk />
+                    </div>
                     <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
                 </div>
                 <div className="flex gap-2">
@@ -90,20 +111,56 @@ export default function CreatePage() {
                 </div>
                 {includeOtherNames && (
                     <div className="grid gap-1 p-2 rounded-md border border-gray-300">
-                        <div>
-
+                        <div className="flex gap-1">
+                            {
+                                otherNames.map((name: string, index: number) =>
+                                    <p
+                                        onMouseDown={() => removeOtherName(name)}
+                                        className="bg-green-200 border border-green-300 rounded-md p-1 cursor-pointer transition duration-300 hover:bg-red-300 hover:border-red-400"
+                                        key={index}
+                                    >{name}</p>
+                                )
+                            }
                         </div>
-                        <form>
-                            <label className="font-bold">Other names</label>
-                            <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
-                        </form>
+                        <div className="grid gap-1 p-2">
+                            <label htmlFor="other-name-field" className="font-bold">Other names</label>
+                            <div className="flex gap-1">
+                                <input
+                                    id="other-name-field"
+                                    placeholder="Type a name and press 'Enter'"
+                                    className="flex-1 rounded-md p-1 border border-gray-300"
+                                    onChange={(e) => setOtherNameVal(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        console.log(e.key);
+                                        if (e.key === "Enter") addOtherName();
+                                    }}
+                                    value={otherNameVal}
+                                    type="text"
+                                    required
+                                />
+                                <button
+                                    onMouseDown={addOtherName}
+                                    className="rounded-md border border-gray-400/50 px-2 cursor-pointer"
+                                    type="button"
+                                >Add</button>
+                            </div>
+                        </div>
                     </div>
                 )}
-                <div className="grid gap-1">
-                    <label className="font-bold">Primary name</label>
-                    <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
+                <div className="grid gap-1 mt-4">
+                    <label htmlFor="description-field" className="font-bold">Description (optional)</label>
+                    <textarea
+                        className="resize-none rounded-md border border-gray-400/50"
+                        id="description-field"
+                    />
                 </div>
+                <div className="grid gap-1 mt-4">
+                    <h2 className="text-xl font-bold">Tags</h2>
+                    <div>
 
+                    </div>
+
+                </div>
             </form>
         </div>
     )
