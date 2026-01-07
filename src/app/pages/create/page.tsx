@@ -4,7 +4,13 @@ import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, useState, useEffect } from "react";
 import { Color, ColorTone, Pattern, Ponysona, PonysonaTag } from "@/generated/client";
-import { Asterisk } from "lucide-react";
+import { Asterisk, Tags } from "lucide-react";
+
+import { Tag } from "@/components/Tag";
+import { MediaUpload } from "@/components/MediaUpload";
+
+import { NamePill } from "@/components/pills/Name";
+import { SourcePill } from "@/components/pills/Source";
 
 interface PonysonaAttributePayload {
     color: Color,
@@ -34,6 +40,8 @@ export default function CreatePage() {
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
     const [otherNameVal, setOtherNameVal] = useState<string>("");
+    const [sourceVal, setSourceVal] = useState<string>("");
+    const [creatorVal, setCreatorVal] = useState<string>("");
     const [availableTags, setAvailableTags] = useState<Array<PonysonaTag>>(new Array<PonysonaTag>());
     const [submitError, setSubmitError] = useState<string>();
 
@@ -70,6 +78,7 @@ export default function CreatePage() {
 
     function addOtherName() {
         if (!otherNameVal) return;
+        if (otherNames.includes(otherNameVal)) return;
         setOtherNames(on => [...on, otherNameVal]);
         setOtherNameVal("");
     }
@@ -79,7 +88,26 @@ export default function CreatePage() {
         setOtherNames(on => on.filter((e: string) => e !== name));
     }
 
+    function addSource() {
+        if (!sourceVal) return;
+        if (sources.includes(sourceVal)) return;
+        setSources(s => [...s, sourceVal]);
+        setSourceVal("");
+    }
+
+    function removeSource(source: string) {
+        if (!sources.includes(source)) return;
+        setSources(s => s.filter((e: string) => e !== source));
+    }
+
+    function toggleTag(tag: PonysonaTag) {
+        if (tagIds.includes(tag.id)) {
+            setTagIds(ids => ids.filter((id: number) => id !== tag.id));
+        } else setTagIds(ids => [...ids, tag.id]);
+    }
+
     useEffect(() => {
+        document.title = "Submit a ponysona | ponies.fyi";
         fetch("/api/tags", { method: "GET" })
             .then((response) => response.json())
             .then((json: any) => {
@@ -94,17 +122,25 @@ export default function CreatePage() {
     }, [setAvailableTags])
 
     return (
-        <div>
+        <div className="mb-16">
             <h1 className="text-3xl font-bold">Submit a ponysona</h1>
             <hr className="h-px my-2 border-0 bg-gray-300" />
             <form onSubmit={onFormSubmit} className="flex flex-col gap-2">
                 <div className="grid gap-1">
+                    <label className="text-xl font-bold" htmlFor="media-upload">Primary artwork</label>
+                    <MediaUpload destination="" id="media-upload" />
+                </div>
+
+                {/* Primary name */}
+                <div className="grid gap-1">
                     <div className="flex gap-1">
-                        <label className="font-bold">Primary name</label>
+                        <label htmlFor="primary-name-field" className="font-bold">Primary name</label>
                         <RequiredAsterisk />
                     </div>
-                    <input className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
+                    <input id="primary-name-field" className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
                 </div>
+
+                {/* Other names */}
                 <div className="flex gap-2">
                     <label htmlFor="include-other-names" className="font-bold">Include other names</label>
                     <input onChange={(e) => setIncludeOtherNames(e.target.checked)} id="include-other-names" type="checkbox" />
@@ -114,11 +150,7 @@ export default function CreatePage() {
                         <div className="flex gap-1">
                             {
                                 otherNames.map((name: string, index: number) =>
-                                    <p
-                                        onMouseDown={() => removeOtherName(name)}
-                                        className="bg-green-200 border border-green-300 rounded-md p-1 cursor-pointer transition duration-300 hover:bg-red-300 hover:border-red-400"
-                                        key={index}
-                                    >{name}</p>
+                                    <NamePill key={index} onClick={() => removeOtherName(name)} name={name} />
                                 )
                             }
                         </div>
@@ -147,6 +179,8 @@ export default function CreatePage() {
                         </div>
                     </div>
                 )}
+
+                {/* Description */}
                 <div className="grid gap-1 mt-4">
                     <label htmlFor="description-field" className="font-bold">Description (optional)</label>
                     <textarea
@@ -154,13 +188,127 @@ export default function CreatePage() {
                         id="description-field"
                     />
                 </div>
+
+                {/* Tags */}
                 <div className="grid gap-1 mt-4">
                     <h2 className="text-xl font-bold">Tags</h2>
-                    <div>
-
+                    <div className="grid grid-cols-3 gap-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Species/race</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "species")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Form</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "form")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Role</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "role")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Setting</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "setting")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Genre</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "genre")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-700">Traits</h3>
+                            <div className="grid gap-1">
+                                {
+                                    availableTags
+                                        .filter((tag: PonysonaTag) => tag.type === "trait")
+                                        .map((tag: PonysonaTag, index: number) =>
+                                            <Tag onClick={toggleTag} added={tagIds.includes(tag.id)} key={index} tag={tag} editing />
+                                        )
+                                }
+                            </div>
+                        </div>
                     </div>
-
                 </div>
+
+                {/* Sources */}
+                <div className="grid gap-1">
+                    <label htmlFor="new-source-field" className="font-bold">Sources</label>
+                    <div className="flex gap-1">
+                        {
+                            sources.map((source: string, index: number) =>
+                                <SourcePill key={index} onClick={() => removeSource(source)} source={source} />
+                            )
+                        }
+                    </div>
+                    <div className="flex gap-1">
+                        <input
+                            id="new-source-field"
+                            placeholder="Type a source and press 'Enter'"
+                            className="flex-1 rounded-md p-1 border border-gray-300"
+                            onChange={(e) => setSourceVal(e.target.value)}
+                            onKeyDown={(e) => {
+                                console.log(e.key);
+                                if (e.key === "Enter") addSource();
+                            }}
+                            value={sourceVal}
+                            type="text"
+                        />
+                        <button
+                            onMouseDown={addOtherName}
+                            className="rounded-md border border-gray-400/50 px-2 cursor-pointer"
+                            type="button"
+                        >Add</button>
+                    </div>
+                </div>
+
+                {/* Creators */}
+
+                {/* Colors */}
+
+                {/* Attributes */}
+
+                <hr className="h-px my-2 border-0 bg-gray-400" />
+                <button type="button" className="p-2 rounded-md bg-emerald-300 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50" type="submit">
+                    Create
+                </button>
             </form>
         </div>
     )
