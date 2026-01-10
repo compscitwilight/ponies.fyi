@@ -11,6 +11,7 @@ import { MediaUpload } from "@/components/MediaUpload";
 
 import { NamePill } from "@/components/pills/Name";
 import { SourcePill } from "@/components/pills/Source";
+import { CreatorPill } from "@/components/pills/Creator";
 
 interface PonysonaAttributePayload {
     color: Color,
@@ -98,6 +99,18 @@ export default function CreatePage() {
     function removeSource(source: string) {
         if (!sources.includes(source)) return;
         setSources(s => s.filter((e: string) => e !== source));
+    }
+
+    function addCreator() {
+        if (!creatorVal) return;
+        if (creators.includes(creatorVal)) return;
+        setCreators(c => [...c, creatorVal]);
+        setCreatorVal("");
+    }
+
+    function removeCreator(creator: string) {
+        if (!creators.includes(creator)) return;
+        setCreators(c => c.filter((e: string) => e !== creator));
     }
 
     function toggleTag(tag: PonysonaTag) {
@@ -300,13 +313,45 @@ export default function CreatePage() {
                 </div>
 
                 {/* Creators */}
+                <div className="grid gap-1">
+                    <label htmlFor="new-creator-field" className="font-bold">Creators</label>
+                    <div className="flex gap-1">
+                        {
+                            creators.map((source: string, index: number) =>
+                                <CreatorPill key={index} onClick={() => removeCreator(source)} creator={source} />
+                            )
+                        }
+                    </div>
+                    <div className="flex gap-1">
+                        <input
+                            id="new-creator-field"
+                            placeholder="Paste a social URL or enter a name and press 'Enter'"
+                            className="flex-1 rounded-md p-1 border border-gray-300"
+                            onChange={(e) => setCreatorVal(e.target.value)}
+                            onKeyDown={(e) => {
+                                console.log(e.key);
+                                if (e.key === "Enter") addCreator();
+                            }}
+                            value={creatorVal}
+                            type="text"
+                        />
+                        <button
+                            onMouseDown={addCreator}
+                            className="rounded-md border border-gray-400/50 px-2 cursor-pointer"
+                            type="button"
+                        >Add</button>
+                    </div>
+                </div>
 
                 {/* Colors */}
+                <div className="grid gap-2">
+                    <h2></h2>
+                </div>
 
                 {/* Attributes */}
 
                 <hr className="h-px my-2 border-0 bg-gray-400" />
-                <button type="button" className="p-2 rounded-md bg-emerald-300 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50" type="submit">
+                <button type="button" className="p-2 rounded-md bg-emerald-300 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
                     Create
                 </button>
             </form>
