@@ -349,6 +349,12 @@ export default function CreatePage() {
                 </div>
 
                 {/* Attributes */}
+                <div className="grid gap-2">
+                    <h2 className="text-xl font-bold">Character attributes</h2>
+                    <div className="flex gap-2 items-center">
+                            
+                    </div>
+                </div>
 
                 <hr className="h-px my-2 border-0 bg-gray-400" />
                 <button type="button" className="p-2 rounded-md bg-emerald-300 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
