@@ -45,6 +45,7 @@ enum BodyPart {
 }
 
 enum Pattern {
+    solid
     striped
     streak
     spotted
@@ -54,8 +55,8 @@ model PonysonaAppearanceAttribute {
     id         String   @id @default(uuid())
     ponysonaId String
     bodyPart   BodyPart
-    color      String?
-    pattern    Pattern?
+    color      String   @default("#000000")
+    pattern    Pattern  @default(solid)
 
     ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])
     createdAt DateTime @default(now())

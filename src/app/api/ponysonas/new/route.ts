@@ -3,24 +3,23 @@ import { headers } from "next/headers";
 import { array, mixed, number, object, string, ValidationError } from "yup";
 
 import prisma from "lib/prisma";
+import { generatePonysonaSlug } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { Color, ColorTone, Pattern } from "@/generated/enums";
+import { BodyPart, Pattern } from "@/generated/enums";
 
 const PonysonaAttributeBody = object({
-    color: mixed<Color>().oneOf(Object.values(Color)).required(),
-    tone: mixed<ColorTone>().oneOf(Object.values(ColorTone)).required(),
-    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
+    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
+    color: string().required(),
+    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).required()
 });
 
 const NewPonysonaBody = object({
     primaryName: string().required(),
-    otherNames: array(string()).nullable().optional(),
+    otherNames: array(string().required()).nullable().optional(),
     description: string().nullable().optional(),
-    tagIds: array(number()).required(),
-    sources: array(string()).nullable().optional(),
-    creators: array(string()).nullable().optional(),
-    colorsHex: array(string()).required(),
-    colorsName: array(string()).required(),
+    tagIds: array(number().required()).required(),
+    sources: array(string().required()).nullable().optional(),
+    creators: array(string().required()).nullable().optional(),
     attributes: object({
         mane: PonysonaAttributeBody.nullable().optional(),
         tail: PonysonaAttributeBody.nullable().optional(),
@@ -28,7 +27,7 @@ const NewPonysonaBody = object({
         wings: PonysonaAttributeBody.nullable().optional(),
         horn: PonysonaAttributeBody.nullable().optional(),
         eyes: PonysonaAttributeBody.nullable().optional()
-    })
+    }).optional()
 });
 
 export async function POST(request: Request) {
@@ -51,13 +50,33 @@ export async function POST(request: Request) {
     const validatedBody = await NewPonysonaBody.validate(requestBody);
     try {
         await prisma.$transaction(async (tx: TransactionClient) => {
-            // const newPonysona = await tx.ponysona.create({
-            //     data: {
+            const slug = await generatePonysonaSlug(validatedBody.primaryName);
+            const newPonysona = await tx.ponysona.create({
+                data: {
+                    slug,
+                    primaryName: validatedBody.primaryName,
+                    ...(validatedBody.otherNames && { otherNames: validatedBody.otherNames }),
+                    description: validatedBody.description,
+                    tagIds: (validatedBody.tagIds && validatedBody.tagIds.length > 0) ? validatedBody.tagIds : [],
+                    sources: (validatedBody.sources && validatedBody.sources.length > 0) ? validatedBody.sources : [],
+                    creators: (validatedBody.creators && validatedBody.creators.length > 0) ? validatedBody.creators : [],
+                    colorsName: []
+                }
+            });
 
-            //     }
-            // });
-
-            
+            if (validatedBody.attributes) {
+                for (const [, attributes] of Object.entries(validatedBody.attributes)) {
+                    if (!attributes) continue
+                    await tx.ponysonaAppearanceAttribute.create({
+                        data: {
+                            ponysonaId: newPonysona.id,
+                            bodyPart: attributes.part,
+                            color: attributes.color,
+                            pattern: attributes.pattern
+                        }
+                    })
+                }
+            }
         })
     } catch (error) {
         return NextResponse.json(

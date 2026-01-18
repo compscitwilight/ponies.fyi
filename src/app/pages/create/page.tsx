@@ -2,24 +2,48 @@
 
 import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useState, useEffect } from "react";
-import { Color, ColorTone, Pattern, Ponysona, PonysonaTag } from "@/generated/client";
-import { Asterisk, Tags } from "lucide-react";
+import { FormEvent, useState, useEffect, PropsWithChildren } from "react";
+import { BodyPart, Ponysona, PonysonaTag } from "@/generated/client";
+import { Asterisk, Plus } from "lucide-react";
+import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
 
 import { Tag } from "@/components/Tag";
 import { MediaUpload } from "@/components/MediaUpload";
+import { CharacterAttributeStyle } from "@/components/CharacterAttributeStyle";
 
 import { NamePill } from "@/components/pills/Name";
 import { SourcePill } from "@/components/pills/Source";
 import { CreatorPill } from "@/components/pills/Creator";
 
-interface PonysonaAttributePayload {
-    color: Color,
-    tone: ColorTone,
-    pattern: Pattern
+const RequiredAsterisk = () => <Asterisk size={18} className="text-red-400" />;
+
+interface PonysonaAttributeKV<V> {
+    mane?: V,
+    tail?: V,
+    coat?: V,
+    wings?: V,
+    horn?: V,
+    eyes?: V
 }
 
-const RequiredAsterisk = () => <Asterisk size={18} className="text-red-400" />;
+function PonysonaAttributeHeader({
+    onToggle,
+    toggled,
+    children
+}: {
+    toggled?: boolean,
+    onToggle: () => void,
+} & PropsWithChildren) {
+    const bodyPart = children as string;
+    return (
+        <div className="flex gap-1 items-center">
+            <h2 className="flex-1 text-xl font-bold">{bodyPart}</h2>
+            <button type="button" onMouseDown={onToggle} className="border rounded-md p-1 border-gray-300 cursor-pointer">
+                {toggled ? "Exclude" : "Include"}
+            </button>
+        </div>
+    )
+}
 
 export default function CreatePage() {
     const [primaryName, setPrimaryName] = useState<string>();
@@ -28,18 +52,10 @@ export default function CreatePage() {
     const [tagIds, setTagIds] = useState<Array<number>>(new Array<number>());
     const [sources, setSources] = useState<Array<string>>(new Array<string>());
     const [creators, setCreators] = useState<Array<string>>(new Array<string>());
-    const [colorsHex, setColorsHex] = useState<Array<string>>(new Array<string>());
-    const [colorsName, setColorsName] = useState<Array<string>>(new Array<string>());
-    const [attributes, setAttributes] = useState<Array<{
-        mane?: PonysonaAttributePayload,
-        tail?: PonysonaAttributePayload,
-        coat?: PonysonaAttributePayload,
-        wings?: PonysonaAttributePayload,
-        horn?: PonysonaAttributePayload,
-        eyes?: PonysonaAttributePayload
-    }>>({} as any);
+    const [attributes, setAttributes] = useState<PonysonaAttributeKV<PonysonaAttributePayload>>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
+    const [attributesVisibility, setAttributesVisibility] = useState<PonysonaAttributeKV<boolean>>({} as any);
     const [otherNameVal, setOtherNameVal] = useState<string>("");
     const [sourceVal, setSourceVal] = useState<string>("");
     const [creatorVal, setCreatorVal] = useState<string>("");
@@ -47,34 +63,41 @@ export default function CreatePage() {
     const [submitError, setSubmitError] = useState<string>();
 
     function onFormSubmit(ev: FormEvent) {
-        const searchParams = useSearchParams();
-        const router = useRouter();
         ev.preventDefault();
-        fetch("/api/ponysonas/new", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify({
-                primaryName,
-                otherNames,
-                description,
-                tagIds,
-                sources,
-                creators,
-                colorsHex,
-                colorsName,
-                attributes
-            })
-        })
-            .then((response) => response.json())
-            .then((json: any) => {
-                if (json.message) setSubmitError(json.message);
-                else {
-                    const result = json as Ponysona;
-                    router.push(`/${result.slug}`);
-                }
-            })
+        const reqPayload = {
+            primaryName,
+            otherNames,
+            description,
+            tagIds,
+            sources,
+            creators,
+            attributes
+        };
+        console.log(reqPayload);
+
+        // fetch("/api/ponysonas/new", {
+        //     method: "POST",
+        //     headers: {
+        //         "content-type": "application/json"
+        //     },
+        //     body: JSON.stringify({
+        //         primaryName,
+        //         otherNames,
+        //         description,
+        //         tagIds,
+        //         sources,
+        //         creators,
+        //         attributes
+        //     })
+        // })
+        //     .then((response) => response.json())
+        //     .then((json: any) => {
+        //         if (json.message) setSubmitError(json.message);
+        //         else {
+        //             const result = json as Ponysona;
+        //             router.push(`/${result.slug}`);
+        //         }
+        //     })
     }
 
     function addOtherName() {
@@ -119,6 +142,24 @@ export default function CreatePage() {
         } else setTagIds(ids => [...ids, tag.id]);
     }
 
+    function assignAttribute(part: BodyPart, data: PonysonaAttributePayload) {
+        const copy = Object.assign({}, attributes);
+        copy[part] = data;
+        setAttributes(copy);
+    }
+
+    function toggleAttributeStylizer(bodyPart: BodyPart) {
+        const copy = Object.assign({}, attributesVisibility);
+        if (copy[bodyPart]) {
+            const attributesCopy = Object.assign({}, attributes);
+            delete attributesCopy[bodyPart];
+            setAttributes(_ => attributesCopy);
+        }
+        copy[bodyPart] = !copy[bodyPart];
+
+        setAttributesVisibility(copy);
+    }
+
     useEffect(() => {
         document.title = "Submit a ponysona | ponies.fyi";
         fetch("/api/tags", { method: "GET" })
@@ -138,10 +179,16 @@ export default function CreatePage() {
         <div className="mb-16">
             <h1 className="text-3xl font-bold">Submit a ponysona</h1>
             <hr className="h-px my-2 border-0 bg-gray-300" />
-            <form onSubmit={onFormSubmit} className="flex flex-col gap-2">
-                <div className="grid gap-1">
-                    <label className="text-xl font-bold" htmlFor="media-upload">Primary artwork</label>
-                    <MediaUpload destination="" id="media-upload" />
+            <div className="flex flex-col gap-2">
+                <div className="flex flex-col lg:flex-row gap-2">
+                    <div className="flex-1 grid gap-1">
+                        <label className="text-xl font-bold" htmlFor="media-upload">Primary artwork</label>
+                        <MediaUpload destination="" id="media-upload" />
+                    </div>
+                    <div className="grid gap-1 align-center self-start">
+                        <label className="text-xl font-bold" htmlFor="cutie-mark-upload">Cutie mark</label>
+                        <MediaUpload destination="" id="cutie-mark-upload" />
+                    </div>
                 </div>
 
                 {/* Primary name */}
@@ -197,6 +244,7 @@ export default function CreatePage() {
                 <div className="grid gap-1 mt-4">
                     <label htmlFor="description-field" className="font-bold">Description (optional)</label>
                     <textarea
+                        onChange={(e) => setDescription(e.target.value)}
                         className="resize-none rounded-md border border-gray-400/50"
                         id="description-field"
                     />
@@ -205,9 +253,12 @@ export default function CreatePage() {
                 {/* Tags */}
                 <div className="grid gap-1 mt-4">
                     <h2 className="text-xl font-bold">Tags</h2>
+                    <p>
+                        Select tags that most accurately describes this ponysona.
+                    </p>
                     <div className="grid grid-cols-3 gap-4">
                         <div>
-                            <h3 className="text-lg font-bold text-gray-700">Species/race</h3>
+                            <h3 className="text-lg font-bold text-gray-700">Species</h3>
                             <div className="grid gap-1">
                                 {
                                     availableTags
@@ -350,17 +401,69 @@ export default function CreatePage() {
 
                 {/* Attributes */}
                 <div className="grid gap-2">
-                    <h2 className="text-xl font-bold">Character attributes</h2>
-                    <div className="flex gap-2 items-center">
-                            
+                    <div>
+                        <h2 className="text-xl font-bold">Character attributes</h2>
+                        <hr className="h-px my-2 border-0 bg-gray-300" />
+                    </div>
+                    <div className="grid gap-2 items-center">
+                        <div>
+                            <PonysonaAttributeHeader
+                                toggled={attributesVisibility["tail"]}
+                                onToggle={() => toggleAttributeStylizer("tail")}
+                            >Tail</PonysonaAttributeHeader>
+                            {attributesVisibility["tail"] && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("tail", payload)}
+                                bodyPart="tail"
+                            />}
+                        </div>
+                        <div>
+                            <PonysonaAttributeHeader
+                                toggled={attributesVisibility["coat"]}
+                                onToggle={() => toggleAttributeStylizer("coat")}
+                            >Coat</PonysonaAttributeHeader>
+                            {attributesVisibility["coat"] && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("coat", payload)}
+                                bodyPart="coat"
+                            />}
+                        </div>
+                        <div>
+                            <PonysonaAttributeHeader
+                                toggled={attributesVisibility["wings"]}
+                                onToggle={() => toggleAttributeStylizer("wings")}
+                            >Wings</PonysonaAttributeHeader>
+                            {attributesVisibility["wings"] && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("wings", payload)}
+                                bodyPart="wings"
+                            />}
+                        </div>
+                        <div>
+                            <PonysonaAttributeHeader
+                                toggled={attributesVisibility["horn"]}
+                                onToggle={() => toggleAttributeStylizer("horn")}
+                            >Horn</PonysonaAttributeHeader>
+                            {attributesVisibility["horn"] && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("horn", payload)}
+                                bodyPart="horn"
+                            />}
+                        </div>
+                        <div>
+                            <PonysonaAttributeHeader
+                                toggled={attributesVisibility["eyes"]}
+                                onToggle={() => toggleAttributeStylizer("eyes")}
+                            >Eyes</PonysonaAttributeHeader>
+                            {attributesVisibility["eyes"] && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("eyes", payload)}
+                                bodyPart="eyes"
+                            />}
+                        </div>
                     </div>
                 </div>
 
                 <hr className="h-px my-2 border-0 bg-gray-400" />
-                <button type="button" className="p-2 rounded-md bg-emerald-300 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
+                <button onMouseDown={onFormSubmit} type="button" className="p-2 rounded-md bg-emerald-400 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
                     Create
                 </button>
-            </form>
+            </div>
         </div>
     )
 }

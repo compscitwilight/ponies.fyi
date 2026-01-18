@@ -5,10 +5,16 @@ import { Image } from "lucide-react";
 
 export function MediaUpload({
     destination,
-    id
+    id,
+    maxResW,
+    maxResH,
+    supportedFormats
 }: {
     destination: string,
-    id?: string
+    id?: string,
+    maxResW?: number,
+    maxResH?: number,
+    supportedFormats?: Array<string>
 }) {
     const [uploadProgress, setUploadProgress] = useState<string>();
 
@@ -41,9 +47,19 @@ export function MediaUpload({
 
     return (
         <div>
-            <div className="relative w-full h-[256px] rounded-md border border-gray-400/50">
-                <input id={id} className="opacity-0 top-0 left-0 h-full w-full cursor-pointer" onChange={onFileUpload} type="file" />
+            <div className="relative w-full h-[256px] rounded-md border border-gray-400/50 transition-border duration-200 hover:border-gray-400/75">
+                <input
+                    id={id}
+                    className="opacity-0 top-0 left-0 h-full w-full cursor-pointer"
+                    onChange={onFileUpload}
+                    accept={supportedFormats?.join(",")}
+                    type="file"
+                />
                 <Image className="absolute top-0 left-0 h-full w-full text-gray-400 p-16 -z-1" />
+                <label className="text-sm text-gray-400" htmlFor={id}>
+                    {(supportedFormats && supportedFormats.length > 0) && `Supported types ${supportedFormats?.join(",")}. ` }
+                    {(maxResW && maxResH) && `Max image size ${maxResW}x${maxResH}`}
+                </label>
             </div>
         </div>
     )
