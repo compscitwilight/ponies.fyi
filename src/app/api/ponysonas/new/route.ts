@@ -4,6 +4,7 @@ import { array, mixed, number, object, string, ValidationError } from "yup";
 
 import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
+import { StatusMessages } from "lib/errors";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { BodyPart, Pattern } from "@/generated/enums";
 
@@ -27,6 +28,10 @@ const NewPonysonaBody = object({
         wings: PonysonaAttributeBody.nullable().optional(),
         horn: PonysonaAttributeBody.nullable().optional(),
         eyes: PonysonaAttributeBody.nullable().optional()
+    }).optional(),
+    media: object({
+        preview: string().nullable().optional(),
+        mark: string().nullable().optional()
     }).optional()
 });
 
@@ -34,7 +39,7 @@ export async function POST(request: Request) {
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
-            { message: "'Content-Type' must be application/json" },
+            { message: StatusMessages.INVALID_CONTENT_TYPE },
             { status: 400 }
         );
 

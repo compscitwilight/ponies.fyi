@@ -33,6 +33,31 @@ model Ponysona {
     updatedAt DateTime @updatedAt
 
     original Ponysona? @relation(name: "derivatives", fields: [originalId], references: [id])
+    media    Media[]
+}
+
+enum MediaType {
+    preview
+    mark
+    gallery
+}
+
+enum MediaStatus {
+    pending /* added */
+    uploaded /* committed */
+    finalized /* pushed */
+}
+
+model Media {
+    id         String      @id @default(uuid())
+    ponysonaId String?
+    type       MediaType   @default(gallery)
+    status     MediaStatus @default(pending)
+    size       String?
+    createdAt  DateTime    @default(now())
+    updatedAt  DateTime    @updatedAt
+
+    ponysona Ponysona? @relation(fields: [ponysonaId], references: [id])
 }
 
 enum BodyPart {
