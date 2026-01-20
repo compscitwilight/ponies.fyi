@@ -30,5 +30,6 @@ export async function POST(request: Request) {
         data: { type: validatedBody.type }
     });
 
-    
+    const url = await generatePresignedUploadURL(mediaObject.id, validatedBody.mime);
+    return NextResponse.json({ uuid: mediaObject.id, url }, { status: 200 });
 }

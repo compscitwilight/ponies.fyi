@@ -6,12 +6,12 @@ import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { BodyPart, Pattern } from "@/generated/enums";
+import { BodyPart, MediaStatus, Pattern } from "@/generated/enums";
 
 const PonysonaAttributeBody = object({
-    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
-    color: string().required(),
-    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).required()
+    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).optional(),
+    color: string().optional(),
+    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
 });
 
 const NewPonysonaBody = object({
@@ -54,8 +54,8 @@ export async function POST(request: Request) {
 
     const validatedBody = await NewPonysonaBody.validate(requestBody);
     try {
-        await prisma.$transaction(async (tx: TransactionClient) => {
-            const slug = await generatePonysonaSlug(validatedBody.primaryName);
+        const slug = await generatePonysonaSlug(validatedBody.primaryName);
+        return await prisma.$transaction(async (tx: TransactionClient) => {
             const newPonysona = await tx.ponysona.create({
                 data: {
                     slug,
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
 
             if (validatedBody.attributes) {
                 for (const [, attributes] of Object.entries(validatedBody.attributes)) {
-                    if (!attributes) continue
+                    if (!attributes || !attributes.part) continue
                     await tx.ponysonaAppearanceAttribute.create({
                         data: {
                             ponysonaId: newPonysona.id,
@@ -82,6 +82,21 @@ export async function POST(request: Request) {
                     })
                 }
             }
+
+            if (validatedBody.media) {
+                for (const uuid of Object.values(validatedBody.media)) {
+                    if (uuid === null) continue;
+                    await tx.media.update({
+                        where: { id: uuid },
+                        data: {
+                            ponysonaId: newPonysona.id,
+                            status: MediaStatus.uploaded
+                        }
+                    });
+                }
+            }
+
+            return NextResponse.json(newPonysona, { status: 200 });
         })
     } catch (error) {
         return NextResponse.json(

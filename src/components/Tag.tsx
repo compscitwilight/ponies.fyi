@@ -22,14 +22,14 @@ export function Tag({
             }`}>
             <p className="text-sm text-gray-700">{tag.type}:</p>
             <p className="text-gray-800 font-bold">{tag.name}</p>
-            <div onMouseDown={() => {
+            {process.browser && <div onMouseDown={() => {
                 if (onClick) onClick(tag);
             }} >
                 {editing && (
                     !added ? <Plus className="cursor-pointer text-gray-600 rounded-lg bg-white" /> :
                         <Minus className="cursor-pointer text-gray-600 rounded-lg bg-white" />
                 )}
-            </div>
+            </div>}
         </div>
     )
 }

@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/router";
-import { useSearchParams } from "next/navigation";
 import { FormEvent, useState, useEffect, PropsWithChildren } from "react";
-import { BodyPart, Ponysona, PonysonaTag } from "@/generated/client";
-import { Asterisk, Plus } from "lucide-react";
+import { Ponysona, BodyPart, MediaType, PonysonaTag } from "@/generated/client";
+import { Asterisk } from "lucide-react";
 import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
 
 import { Tag } from "@/components/Tag";
@@ -46,6 +44,7 @@ function PonysonaAttributeHeader({
 }
 
 export default function CreatePage() {
+    // const router = useRouter();
     const [primaryName, setPrimaryName] = useState<string>();
     const [otherNames, setOtherNames] = useState<Array<string>>(new Array<string>());
     const [description, setDescription] = useState<string>();
@@ -53,6 +52,7 @@ export default function CreatePage() {
     const [sources, setSources] = useState<Array<string>>(new Array<string>());
     const [creators, setCreators] = useState<Array<string>>(new Array<string>());
     const [attributes, setAttributes] = useState<PonysonaAttributeKV<PonysonaAttributePayload>>({} as any);
+    const [media, setMedia] = useState<{ preview?: string, avatar?: string }>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
     const [attributesVisibility, setAttributesVisibility] = useState<PonysonaAttributeKV<boolean>>({} as any);
@@ -71,33 +71,27 @@ export default function CreatePage() {
             tagIds,
             sources,
             creators,
-            attributes
+            attributes,
+            media
         };
         console.log(reqPayload);
 
-        // fetch("/api/ponysonas/new", {
-        //     method: "POST",
-        //     headers: {
-        //         "content-type": "application/json"
-        //     },
-        //     body: JSON.stringify({
-        //         primaryName,
-        //         otherNames,
-        //         description,
-        //         tagIds,
-        //         sources,
-        //         creators,
-        //         attributes
-        //     })
-        // })
-        //     .then((response) => response.json())
-        //     .then((json: any) => {
-        //         if (json.message) setSubmitError(json.message);
-        //         else {
-        //             const result = json as Ponysona;
-        //             router.push(`/${result.slug}`);
-        //         }
-        //     })
+        fetch("/api/ponysonas/new", {
+            method: "POST",
+            headers: {
+                "content-type": "application/json"
+            },
+            body: JSON.stringify(reqPayload)
+        })
+            .then((response) => response.json())
+            .then((json: any) => {
+                if (json.message) setSubmitError(json.message);
+                else {
+                    const result = json as Ponysona;
+                    window.location.assign(`/${result.slug}`)
+                    // router.push(`/${result.slug}`);
+                }
+            })
     }
 
     function addOtherName() {
@@ -160,6 +154,12 @@ export default function CreatePage() {
         setAttributesVisibility(copy);
     }
 
+    function assignMedia(type: MediaType, uuid: string) {
+        const copy = Object.assign({}, media) as any;
+        copy[type] = uuid;
+        setMedia(copy);
+    }
+
     useEffect(() => {
         document.title = "Submit a ponysona | ponies.fyi";
         fetch("/api/tags", { method: "GET" })
@@ -183,11 +183,19 @@ export default function CreatePage() {
                 <div className="flex flex-col lg:flex-row gap-2">
                     <div className="flex-1 grid gap-1">
                         <label className="text-xl font-bold" htmlFor="media-upload">Primary artwork</label>
-                        <MediaUpload destination="" id="media-upload" />
+                        <MediaUpload
+                            onUploadComplete={(uuid: string) => assignMedia("preview", uuid)}
+                            type="preview"
+                            id="media-upload"
+                        />
                     </div>
                     <div className="grid gap-1 align-center self-start">
                         <label className="text-xl font-bold" htmlFor="cutie-mark-upload">Cutie mark</label>
-                        <MediaUpload destination="" id="cutie-mark-upload" />
+                        <MediaUpload
+                            onUploadComplete={(uuid: string) => assignMedia("mark", uuid)}
+                            type="mark"
+                            id="cutie-mark-upload"
+                        />
                     </div>
                 </div>
 
