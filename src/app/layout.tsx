@@ -52,10 +52,10 @@ export default async function RootLayout({
             </a>
           </div>
         </div>
-        <div className="text-center w-full border border-yellow-300 bg-yellow-200/75 py-1 my-2 font-bold">
+        {/* <div className="text-center w-full border border-yellow-300 bg-yellow-200/75 py-1 my-2 font-bold">
           <p>Testing this for development</p>
-        </div>
-        <div className="lg:w-1/2 m-auto mt-4">
+        </div> */}
+        <div className="lg:w-1/2 m-auto mt-8">
           {children}
         </div>
       </body>

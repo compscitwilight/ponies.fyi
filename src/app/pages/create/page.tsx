@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useEffect, PropsWithChildren } from "react";
+import React, { FormEvent, useState, useEffect, PropsWithChildren } from "react";
 import { Ponysona, BodyPart, MediaType, PonysonaTag } from "@/generated/client";
 import { Asterisk } from "lucide-react";
 import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
@@ -43,7 +43,15 @@ function PonysonaAttributeHeader({
     )
 }
 
-export default function CreatePage() {
+export default function CreatePage({
+    params
+}: {
+    params: Promise<{
+        derivativeOf?: string,
+        editing?: string
+    }>
+}) {
+    const pageParams = React.use(params);
     // const router = useRouter();
     const [primaryName, setPrimaryName] = useState<string>();
     const [otherNames, setOtherNames] = useState<Array<string>>(new Array<string>());

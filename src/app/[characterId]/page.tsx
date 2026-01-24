@@ -1,9 +1,12 @@
-import prisma from "lib/prisma";
+import { Metadata, ResolvingMetadata, Viewport } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
+import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
+import prisma from "lib/prisma";
+
 import { Tag } from "@/components/Tag";
-import { Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
+import { BodyPart, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { ColorPaletteEntry } from "@/components/ColorPaletteEntry";
 import { PonysonaResult } from "@/components/PonysonaResult";
 
@@ -18,6 +21,55 @@ function MetadataField({
     )
 }
 
+// internally used by next.js
+export async function generateMetadata(
+    { params }: {
+        params: Promise<{ characterId: string }>
+    },
+    parent: ResolvingMetadata
+): Promise<Metadata> {
+    const { characterId } = await params;
+    const ponysona = await prisma.ponysona.findUnique({ where: { slug: characterId } });
+
+    if (ponysona === null) throw new Error("Failed to retrieve ponysona metadata");
+
+    const previewObject = await getPonysonaPreview(ponysona);
+
+    let description = new String();
+    description = description.concat(ponysona.primaryName);
+    if (ponysona.otherNames.length > 0)
+        description = description.concat(` (other names: ${ponysona.otherNames.join(", ")}), `);
+
+    description = description.concat(ponysona.description || "no description provided");
+
+    return {
+        title: `${ponysona.primaryName} | ponies.fyi`,
+        description: description as string,
+        ...((previewObject !== null) && {
+            openGraph: {
+                images: [`https://static.ponies.fyi/${previewObject.id}`]
+            }
+        })
+    }
+}
+
+export async function generateViewport({ params }: {
+    params: Promise<{
+        characterId: string
+    }>
+}): Promise<Viewport> {
+    const { characterId } = await params;
+    const firstAttribute = await prisma.ponysonaAppearanceAttribute.findFirst({
+        where: { ponysonaId: characterId },
+        take: 1,
+        orderBy: { bodyPart: "asc" }
+    });
+
+    return {
+        themeColor: firstAttribute ? firstAttribute.color : "#3bb47eff"
+    };
+}
+
 export default async function CharacterPage({ params }: {
     params: Promise<{
         characterId: string
@@ -29,7 +81,11 @@ export default async function CharacterPage({ params }: {
     });
 
     if (ponysona === null)
-        redirect(`/?state=not_found&q=${characterId}`);
+        redirect(`/?state=ponysona_not_found`);
+
+    const previewImageRes = await getPonysonaPreview(ponysona);
+    const markImageRes = await getPonysonaMark(ponysona);
+    // const galleryObjects = await getPonysonaGallery(ponysona);
 
     const attributes = await prisma.ponysonaAppearanceAttribute.findMany({
         where: { ponysonaId: ponysona.id }
@@ -49,9 +105,16 @@ export default async function CharacterPage({ params }: {
     const colors = attributes.map((att: PonysonaAppearanceAttribute) => att.color);
 
     return (
-        <div className="flex gap-2">
+        <div className="flex flex-col w-9/10 m-auto lg:flex-row lg:w-full gap-2">
+            {/* Information */}
             <div className="flex-2 rounded-lg border p-2 border-gray-400/50">
-                <h1 className="font-bold text-3xl">{ponysona.primaryName}</h1>
+                <div className="flex items-center mr-4">
+                    <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
+                    <div className="flex items-center gap-2">
+                        <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>
+                        <Link className="text-red-600 underline" href={`/${ponysona.id}/report`}>Report</Link>
+                    </div>
+                </div>
                 {ponysona.otherNames.length > 0 && <div className="flex gap-1 items-center">
                     <h2 className="text-lg">Other names:</h2>
                     <p className="font-bold">{ponysona.otherNames.join(", ")}</p>
@@ -89,6 +152,7 @@ export default async function CharacterPage({ params }: {
 
                 <h2 className="mt-4 text-lg font-bold">Metadata</h2>
                 <hr className="h-px my-2 border-0 bg-gray-400/50" />
+                <MetadataField name="Internal ID" value={ponysona.id} />
                 <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
                 <MetadataField name="Sources" value={ponysona.sources.length > 0 ? ponysona.sources.join(", ") : "not provided"} />
                 <MetadataField name="Status" value={ponysona.status} />
@@ -117,9 +181,21 @@ export default async function CharacterPage({ params }: {
                     )
                 }
             </div>
-            <div className="flex-1 rounded-lg border p-2 border-gray-400/50">
-                <img className="" src={`/api/ponysonas/${ponysona.id}/preview`} />
-                {characterId}
+
+            {/* Media */}
+            <div className="grid grid-cols-2 lg:grid-cols-1 lg:w-auto w-full flex-1 self-start order-first lg:order-last rounded-lg border p-2 border-gray-400/50">
+                <div>
+                    <label className="text-lg font-bold" htmlFor="character-preview">Preview</label>
+                    {previewImageRes ?
+                        <img id="character-preview" src={`/api/ponysonas/${ponysona.id}/preview`} /> :
+                        <p>No preview image provided</p>}
+                </div>
+                <div>
+                    <label className="text-lg font-bold" htmlFor="character-mark">Cutie Mark</label>
+                    {markImageRes ?
+                        <img id="character-mark" src={`/api/ponysona/${ponysona.id}/mark`} /> :
+                        <p>No cutie mark provided.</p>}
+                </div>
             </div>
         </div>
     )
