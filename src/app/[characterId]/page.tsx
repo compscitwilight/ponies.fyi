@@ -1,6 +1,7 @@
 import { Metadata, ResolvingMetadata, Viewport } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import moment from "moment";
 
 import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
 import prisma from "lib/prisma";
@@ -170,8 +171,8 @@ export default async function CharacterPage({ params }: {
                 <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
                 <MetadataField name="Sources" value={ponysona.sources.length > 0 ? ponysona.sources.join(", ") : "not provided"} />
                 <MetadataField name="Status" value={ponysona.status} />
-                <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()}`} />
-                <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()}`} />
+                <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
+                <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
 
                 {/* Derivatives */}
                 <h2 className="mt-4 text-lg font-bold">Derivatives</h2>

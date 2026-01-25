@@ -99,7 +99,7 @@ export function MediaUpload({
 
     return (
         <div>
-            <div className="relative w-full h-[256px] rounded-md border border-gray-400/50 transition-border duration-200 hover:border-gray-400/75">
+            <div className={`relative w-full ${uploadComplete ? "h-fit" : "h-[256px]"} rounded-md border border-gray-400/50 transition-border duration-200 hover:border-gray-400/75`}>
                 {!uploadComplete ? <>
                     <input
                         id={id}
@@ -114,7 +114,7 @@ export function MediaUpload({
                         {(maxResW && maxResH) && `Max image size ${maxResW}x${maxResH}`}
                     </label>
                 </> : <>
-                    <img src={`https://static.ponies.fyi/${uuid}`} />
+                    <img className="m-auto my-2" src={`https://static.ponies.fyi/${uuid}`} />
                 </>}
 
 

@@ -251,7 +251,7 @@ export default function CreatePage({
 
     return (editing ? editing && existingSlug : true) && (
         <div className="mb-16">
-            <h1 className="text-3xl font-bold">Submit a ponysona</h1>
+            <h1 className="text-3xl font-bold">{editing ? `Editing "${primaryName}"` : "Submit a ponysona"}</h1>
             <hr className="h-px my-2 border-0 bg-gray-300" />
             <div className="flex flex-col gap-2">
                 <div className="flex flex-col lg:flex-row gap-2">
