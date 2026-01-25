@@ -107,7 +107,7 @@ export default function CreatePage({
                 })
         } else {
             fetch(`/api/ponysonas/${editing}/update`, {
-                method: "POST",
+                method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },

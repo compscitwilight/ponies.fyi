@@ -7,7 +7,7 @@ import { PonysonaBody as UpdatePonysonaBody } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { MediaStatus, MediaType } from "@/generated/enums";
 
-export async function GET(
+export async function PUT(
     request: Request,
     { params }: {
         params: Promise<{
