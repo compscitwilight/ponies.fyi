@@ -60,17 +60,30 @@ export async function PUT(
             if (validatedBody.attributes) {
                 for (const attribute of Object.values(validatedBody.attributes)) {
                     if (!attribute || !attribute.color || !attribute.part || !attribute.pattern) continue;
-                    await tx.ponysonaAppearanceAttribute.update({
+                    const existingAttribute = await tx.ponysonaAppearanceAttribute.findFirst({
                         where: {
-                            ponysonaId_bodyPart_color_pattern: {
+                            ponysonaId: ponysona.id,
+                            bodyPart: attribute.part,
+                        }
+                    });
+
+                    if (existingAttribute)
+                        await tx.ponysonaAppearanceAttribute.update({
+                            where: { id: existingAttribute.id },
+                            data: {
+                                color: attribute.color,
+                                pattern: attribute.pattern
+                            }
+                        });
+                    else
+                        await tx.ponysonaAppearanceAttribute.create({
+                            data: {
                                 ponysonaId: ponysona.id,
                                 bodyPart: attribute.part,
                                 color: attribute.color,
                                 pattern: attribute.pattern
                             }
-                        },
-                        data: attribute
-                    });
+                        });
                 }
             }
 
