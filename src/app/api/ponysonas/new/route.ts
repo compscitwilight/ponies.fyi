@@ -6,34 +6,8 @@ import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { BodyPart, MediaStatus, Pattern } from "@/generated/enums";
-
-const PonysonaAttributeBody = object({
-    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).optional(),
-    color: string().optional(),
-    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
-});
-
-const NewPonysonaBody = object({
-    primaryName: string().required(),
-    otherNames: array(string().required()).nullable().optional(),
-    description: string().nullable().optional(),
-    tagIds: array(number().required()).required(),
-    sources: array(string().required()).nullable().optional(),
-    creators: array(string().required()).nullable().optional(),
-    attributes: object({
-        mane: PonysonaAttributeBody.nullable().optional(),
-        tail: PonysonaAttributeBody.nullable().optional(),
-        coat: PonysonaAttributeBody.nullable().optional(),
-        wings: PonysonaAttributeBody.nullable().optional(),
-        horn: PonysonaAttributeBody.nullable().optional(),
-        eyes: PonysonaAttributeBody.nullable().optional()
-    }).optional(),
-    media: object({
-        preview: string().nullable().optional(),
-        mark: string().nullable().optional()
-    }).optional()
-});
+import { MediaStatus } from "@/generated/enums";
+import { PonysonaBody as NewPonysonaBody } from "lib/ponysonas";
 
 export async function POST(request: Request) {
     const requestHeaders = await headers();
@@ -99,8 +73,9 @@ export async function POST(request: Request) {
             return NextResponse.json(newPonysona, { status: 200 });
         })
     } catch (error) {
+        console.error(error);
         return NextResponse.json(
-            { message: (error as Error).message },
+            { message: "An internal server error occurred whilst creating this ponysona" },
             { status: 500 }
         );
     }

@@ -1,6 +1,34 @@
 import { randomBytes } from "node:crypto";
+import { object, string, array, number, mixed } from "yup";
 import prisma from "./prisma";
-import { MediaType, Ponysona } from "@/generated/client";
+import { MediaType, Ponysona, BodyPart, Pattern } from "@/generated/client";
+
+const PonysonaAttributeBody = object({
+    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).optional(),
+    color: string().optional(),
+    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
+});
+
+export const PonysonaBody = object({
+    primaryName: string().required(),
+    otherNames: array(string().required()).optional().default(new Array<string>()),
+    description: string().nullable().optional(),
+    tagIds: array(number().required()).required(),
+    sources: array(string().required()).optional().default(new Array<string>()),
+    creators: array(string().required()).optional().default(new Array<string>()),
+    attributes: object({
+        mane: PonysonaAttributeBody.nullable().optional(),
+        tail: PonysonaAttributeBody.nullable().optional(),
+        coat: PonysonaAttributeBody.nullable().optional(),
+        wings: PonysonaAttributeBody.nullable().optional(),
+        horn: PonysonaAttributeBody.nullable().optional(),
+        eyes: PonysonaAttributeBody.nullable().optional()
+    }).optional(),
+    media: object({
+        preview: string().nullable().optional(),
+        mark: string().nullable().optional()
+    }).optional()
+});
 
 export async function generatePonysonaSlug(primaryName: string) {
     const normalizedName = primaryName

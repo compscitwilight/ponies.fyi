@@ -1,15 +1,25 @@
 "use client";
 
-import { useState, ChangeEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { Image } from "lucide-react";
 import { MediaType } from "@/generated/enums";
 
+/**
+ * Provides an intuitive interface for uploading images (and other media) directly to the connected S3 bucket.
+ * @param type The type flag for the media being uploaded (e.g. preview, mark, gallery by default)
+ * @param maxResW The maximum width of the image or video being uploaded
+ * @param maxResH The maximum width of the image or video being uploaded
+ * @param supportedFormats List of valid, supported MIME types for this media upload.
+ * @param defaultValue A UUID pointing to an already uploaded object (useful for modification forms)
+ * @param onUploadComplete Event handler invoked after the file has been successfully uploaded, processed, and finalized.
+ */
 export function MediaUpload({
     type,
     id,
     maxResW,
     maxResH,
     supportedFormats,
+    defaultValue,
     onUploadComplete
 }: {
     type: MediaType,
@@ -17,13 +27,14 @@ export function MediaUpload({
     maxResW?: number,
     maxResH?: number,
     supportedFormats?: Array<string>,
+    defaultValue?: string | any,
     onUploadComplete?: (uuid: string) => void
 }) {
     const [uploadProgress, setUploadProgress] = useState<string>();
-    const [uploadComplete, setUploadComplete] = useState<boolean>();
+    const [uploadComplete, setUploadComplete] = useState<boolean>(defaultValue !== undefined);
     const [finalizing, setFinalizing] = useState<boolean>();
     const [uploadError, setUploadError] = useState<string>();
-    const [uuid, setUUID] = useState<string>();
+    const [uuid, setUUID] = useState<string>(defaultValue);
 
     function onFileUpload(ev: ChangeEvent<HTMLInputElement>) {
         if (!ev.target.files) {

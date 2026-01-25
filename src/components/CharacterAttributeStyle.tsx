@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { BodyPart, Pattern } from "@/generated/enums";
 
 import { LabeledColorPicker } from "./LabeledColorPicker";
+import { PonysonaAppearanceAttribute } from "@/generated/client";
 
 export interface PonysonaAttributePayload {
     part: BodyPart,

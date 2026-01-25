@@ -1,7 +1,8 @@
 "use client";
 
 import React, { FormEvent, useState, useEffect, PropsWithChildren } from "react";
-import { Ponysona, BodyPart, MediaType, PonysonaTag } from "@/generated/client";
+// import { redirect } from "next/navigation";
+import type { Ponysona, BodyPart, MediaType, PonysonaTag, PonysonaAppearanceAttribute, Media } from "@/generated/client";
 import { Asterisk } from "lucide-react";
 import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
 
@@ -44,15 +45,18 @@ function PonysonaAttributeHeader({
 }
 
 export default function CreatePage({
-    params
+    searchParams
 }: {
-    params: Promise<{
-        derivativeOf?: string,
+    searchParams: Promise<{
+        derivativeof?: string,
         editing?: string
     }>
 }) {
-    const pageParams = React.use(params);
-    // const router = useRouter();
+    const { derivativeof: derivativeOf, editing } = React.use(searchParams);
+
+    // used when editing for redirecting
+    const [existingSlug, setExistingSlug] = useState<string>();
+
     const [primaryName, setPrimaryName] = useState<string>();
     const [otherNames, setOtherNames] = useState<Array<string>>(new Array<string>());
     const [description, setDescription] = useState<string>();
@@ -60,7 +64,7 @@ export default function CreatePage({
     const [sources, setSources] = useState<Array<string>>(new Array<string>());
     const [creators, setCreators] = useState<Array<string>>(new Array<string>());
     const [attributes, setAttributes] = useState<PonysonaAttributeKV<PonysonaAttributePayload>>({} as any);
-    const [media, setMedia] = useState<{ preview?: string, avatar?: string }>({} as any);
+    const [media, setMedia] = useState<{ preview?: string, mark?: string }>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
     const [attributesVisibility, setAttributesVisibility] = useState<PonysonaAttributeKV<boolean>>({} as any);
@@ -84,22 +88,39 @@ export default function CreatePage({
         };
         console.log(reqPayload);
 
-        fetch("/api/ponysonas/new", {
-            method: "POST",
-            headers: {
-                "content-type": "application/json"
-            },
-            body: JSON.stringify(reqPayload)
-        })
-            .then((response) => response.json())
-            .then((json: any) => {
-                if (json.message) setSubmitError(json.message);
-                else {
-                    const result = json as Ponysona;
-                    window.location.assign(`/${result.slug}`)
-                    // router.push(`/${result.slug}`);
-                }
+        if (!editing) {
+            fetch("/api/ponysonas/new", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify(reqPayload)
             })
+                .then((response) => response.json())
+                .then((json: any) => {
+                    if (json.message) setSubmitError(json.message);
+                    else {
+                        const result = json as Ponysona;
+                        window.location.assign(`/${result.slug}`)
+                        // router.push(`/${result.slug}`);
+                    }
+                })
+        } else {
+            fetch(`/api/ponysonas/${editing}/update`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(reqPayload)
+            })
+                .then((response) => {
+                    if (response.status !== 200) return response.json();
+                    else window.location.assign(`/${existingSlug}`);
+                })
+                .then((json: any) => {
+                    if (json && json.message) setSubmitError(json.message);
+                })
+        }
     }
 
     function addOtherName() {
@@ -181,9 +202,55 @@ export default function CreatePage({
                 const tagResults = json as Array<PonysonaTag>;
                 setAvailableTags(tagResults);
             })
+
+        if (editing)
+            fetch(`/api/ponysonas/${editing}`, { method: "GET" })
+                .then((response) => {
+                    if (response.status !== 200) window.location.assign("/pages/create");
+                    return response.json();
+                })
+                .then((json: any) => {
+                    const data = json as Ponysona & {
+                        attributes: Array<PonysonaAppearanceAttribute>
+                    };
+
+                    setPrimaryName(data.primaryName);
+
+                    setOtherNames(data.otherNames);
+                    if (data.otherNames.length > 0) setIncludeOtherNames(true);
+
+                    if (data.description) setDescription(data.description);
+                    setTagIds(data.tagIds);
+                    setSources(data.sources);
+                    setCreators(data.creators);
+                    if (data.attributes) {
+                        for (const attribute of data.attributes) {
+                            assignAttribute(attribute.bodyPart, {
+                                part: attribute.bodyPart,
+                                color: attribute.color,
+                                pattern: attribute.pattern
+                            } as PonysonaAttributePayload);
+                            toggleAttributeStylizer(attribute.bodyPart);
+                        }
+                    };
+
+                    fetch(`/api/ponysonas/${data.id}/media`, { method: "GET" })
+                        .then((response) => response.json())
+                        .then((json: any) => {
+                            if (!json.message) {
+                                const data = json as Array<Media>;
+                                const preview = data.find((d: Media) => d.type === "preview");
+                                if (preview) assignMedia("preview", preview.id);
+
+                                const mark = data.find((d: Media) => d.type === "mark");
+                                if (mark) assignMedia("mark", mark.id);
+                            }
+                        })
+                        .finally(() => setExistingSlug(data.slug));
+                })
     }, [setAvailableTags])
 
-    return (
+    return (editing ? editing && existingSlug : true) && (
         <div className="mb-16">
             <h1 className="text-3xl font-bold">Submit a ponysona</h1>
             <hr className="h-px my-2 border-0 bg-gray-300" />
@@ -195,6 +262,7 @@ export default function CreatePage({
                             onUploadComplete={(uuid: string) => assignMedia("preview", uuid)}
                             type="preview"
                             id="media-upload"
+                            defaultValue={media.preview}
                         />
                     </div>
                     <div className="grid gap-1 align-center self-start">
@@ -203,6 +271,7 @@ export default function CreatePage({
                             onUploadComplete={(uuid: string) => assignMedia("mark", uuid)}
                             type="mark"
                             id="cutie-mark-upload"
+                            defaultValue={media.mark}
                         />
                     </div>
                 </div>
@@ -213,13 +282,13 @@ export default function CreatePage({
                         <label htmlFor="primary-name-field" className="font-bold">Primary name</label>
                         <RequiredAsterisk />
                     </div>
-                    <input id="primary-name-field" className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" required />
+                    <input id="primary-name-field" className="rounded-md p-1 border border-gray-300" onChange={(e) => setPrimaryName(e.target.value)} type="text" defaultValue={primaryName} required />
                 </div>
 
                 {/* Other names */}
                 <div className="flex gap-2">
                     <label htmlFor="include-other-names" className="font-bold">Include other names</label>
-                    <input onChange={(e) => setIncludeOtherNames(e.target.checked)} id="include-other-names" type="checkbox" />
+                    <input onChange={(e) => setIncludeOtherNames(e.target.checked)} defaultChecked={includeOtherNames} id="include-other-names" type="checkbox" />
                 </div>
                 {includeOtherNames && (
                     <div className="grid gap-1 p-2 rounded-md border border-gray-300">
@@ -262,6 +331,7 @@ export default function CreatePage({
                     <textarea
                         onChange={(e) => setDescription(e.target.value)}
                         className="resize-none rounded-md border border-gray-400/50"
+                        defaultValue={description}
                         id="description-field"
                     />
                 </div>
@@ -410,11 +480,6 @@ export default function CreatePage({
                     </div>
                 </div>
 
-                {/* Colors */}
-                <div className="grid gap-2">
-                    <h2></h2>
-                </div>
-
                 {/* Attributes */}
                 <div className="grid gap-2">
                     <div>
@@ -477,7 +542,7 @@ export default function CreatePage({
 
                 <hr className="h-px my-2 border-0 bg-gray-400" />
                 <button onMouseDown={onFormSubmit} type="button" className="p-2 rounded-md bg-emerald-400 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
-                    Create
+                    {!editing ? "Create" : "Submit Changes"}
                 </button>
             </div>
         </div>
