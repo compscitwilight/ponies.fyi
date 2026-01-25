@@ -109,7 +109,7 @@ export default function CreatePage({
             fetch(`/api/ponysonas/${editing}/update`, {
                 method: "PUT",
                 headers: {
-                    "Content-Type": "application/json"
+                    "content-type": "application/json"
                 },
                 body: JSON.stringify(reqPayload)
             })

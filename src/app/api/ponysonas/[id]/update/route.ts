@@ -16,7 +16,7 @@ export async function PUT(
     }
 ) {
     const requestHeaders = await headers();
-    if (requestHeaders.get("content-type"))
+    if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
             { message: StatusMessages.INVALID_CONTENT_TYPE },
             { status: 400 }
