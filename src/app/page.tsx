@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import prisma from "lib/prisma";
+import { Ponysona, PonysonaTag } from "@/generated/client";
 import { PaginatedResults } from "@/components/PaginatedResults";
 
 function PageWarning({ children }: PropsWithChildren) {
@@ -38,7 +39,12 @@ export default async function HomePage({ searchParams }: {
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * itemsPerPage,
     take: itemsPerPage
-  });
+  }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
+
+  for (const ponysona of ponysonas)
+    ponysona.tags = await Promise.all(ponysona.tagIds.map((tagId: number) =>
+      prisma.ponysonaTag.findUnique({ where: { id: tagId } })
+    )) as Array<PonysonaTag>;
 
   const ponysonasCount = await prisma.ponysona.count();
 
@@ -46,12 +52,12 @@ export default async function HomePage({ searchParams }: {
     <div>
       {
         pageState === "page_not_found" &&
-          <PageWarning>The page requested could not be found.</PageWarning>
+        <PageWarning>The page requested could not be found.</PageWarning>
       }
 
       {
         pageState === "ponysona_not_found" &&
-          <PageWarning>The ponysona requested could not be found</PageWarning>
+        <PageWarning>The ponysona requested could not be found</PageWarning>
       }
 
       <h1 className="text-3xl font-bold">Home</h1>

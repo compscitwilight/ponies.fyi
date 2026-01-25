@@ -30,7 +30,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex lg:w-2/3 m-auto border-b border-gray-300">
+        <div className="flex lg:w-2/3 m-auto border-b border-gray-400/50">
           <div className="flex flex-1 items-center gap-1">
             <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
             <Link href="/" className="font-equestria ml-4">ponies.fyi</Link>

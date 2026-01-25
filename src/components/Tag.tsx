@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PonysonaTag } from "@/generated/client";
-import { Plus, Minus } from "lucide-react";
+import { Plus, Minus, Shapes, BookOpen, MapPin, Dna, Sparkles, Briefcase } from "lucide-react";
 
 export function Tag({
     tag,
@@ -23,7 +23,16 @@ export function Tag({
                         tag.type === "species" ? "bg-emerald-300 border-emerald-400" :
                             tag.type === "trait" && "bg-orange-500 border-orange-600"
             }`}>
-            <p className="text-sm text-gray-700">{tag.type}:</p>
+
+            <div title={tag.type} className="text-gray-800">
+                {tag.type === "form" ? <Shapes /> :
+                    tag.type === "role" ? <Briefcase /> :
+                        tag.type === "genre" ? <BookOpen /> :
+                            tag.type === "setting" ? <MapPin /> :
+                                tag.type === "species" ? <Dna /> :
+                                    tag.type === "trait" && <Sparkles />}
+            </div>
+
             <div className="text-gray-800 font-bold">
                 {redirect ? <Link href={`/?q=${tag.name}`}>{tag.name}</Link> : <p>{tag.name}</p>}
             </div>

@@ -4,11 +4,11 @@ import { useRouter } from "next/router";
 import { useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Ponysona } from "@/generated/client";
+import { Ponysona, PonysonaTag } from "@/generated/client";
 import { PonysonaResult } from "./PonysonaResult";
 
 export function PaginatedResults({ items, page, pageSize, totalCount }: {
-    items: Array<Ponysona>
+    items: Array<Ponysona & { tags: Array<PonysonaTag> }>
     page: number,
     pageSize: number,
     totalCount: number
@@ -31,7 +31,7 @@ export function PaginatedResults({ items, page, pageSize, totalCount }: {
         <div>
             {items.length > 0 && <div className="grid lg:grid-cols-3 gap-2">
                 {
-                    items.map((item: Ponysona, index: number) =>
+                    items.map((item: Ponysona & { tags: Array<PonysonaTag> }, index: number) =>
                         <PonysonaResult key={index} ponysona={item} />
                     )
                 }

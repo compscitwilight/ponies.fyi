@@ -36,7 +36,7 @@ export async function generatePonysonaSlug(primaryName: string) {
         .trim()
         .replaceAll(" ", "_");
     const existingPonysonaCnt = await prisma.ponysona.count({ where: { primaryName } });
-    const rnd = randomBytes(8).toString("hex");
+    const rnd = randomBytes(2).toString("hex");
     
     let slug = normalizedName;
     if (existingPonysonaCnt > 0)
