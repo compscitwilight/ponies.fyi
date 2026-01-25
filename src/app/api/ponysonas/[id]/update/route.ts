@@ -92,9 +92,12 @@ export async function PUT(
                 where: { ponysonaId: ponysona.id, type: MediaType.preview }
             });
 
-            if (validatedBody.media && validatedBody.media.preview) {
+            if (
+                validatedBody.media &&
+                validatedBody.media.preview &&
+                (previewObject === null || validatedBody.media.preview !== previewObject.id)) {
                 await tx.media.update({
-                    where: { id: validatedBody.media.preview, ponysonaId: null },
+                    where: { id: validatedBody.media.preview, ponysonaId: ponysona.id },
                     data: {
                         ponysonaId: ponysona.id,
                         status: MediaStatus.uploaded
@@ -106,7 +109,9 @@ export async function PUT(
                 where: { ponysonaId: ponysona.id, type: MediaType.mark }
             });
 
-            if (validatedBody.media && validatedBody.media.mark) {
+            if (validatedBody.media &&
+                validatedBody.media.mark &&
+                (markObject === null || validatedBody.media.mark !== markObject.id)) {
                 await tx.media.update({
                     where: { id: validatedBody.media.mark, ponysonaId: null },
                     data: {
