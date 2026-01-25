@@ -6,7 +6,7 @@ import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/pon
 import prisma from "lib/prisma";
 
 import { Tag } from "@/components/Tag";
-import { BodyPart, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
+import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { ColorPaletteEntry } from "@/components/ColorPaletteEntry";
 import { PonysonaResult } from "@/components/PonysonaResult";
 
@@ -17,6 +17,24 @@ function MetadataField({
         <div className={className || "flex"}>
             <b className="flex-1">{name}</b>
             <p className="flex-2">{value}</p>
+        </div>
+    )
+}
+
+// designed to be compatible with both attributes and accessories
+function AttributeField({
+    name, color, pattern 
+}: { name: string, color: string, pattern?: Pattern }) {
+    return (
+        <div className="flex">
+            <b className="flex-1">{name}</b>
+            <div className="flex flex-2 gap-2 items-center">
+                <p>{pattern}</p>
+                <div
+                    className="text-xs text-gray-400 p-2 border border-black"
+                    style={{ backgroundColor: color }}
+                >{color}</div>
+            </div>
         </div>
     )
 }
@@ -119,37 +137,33 @@ export default async function CharacterPage({ params }: {
                     <h2 className="text-lg">Other names:</h2>
                     <p className="font-bold">{ponysona.otherNames.join(", ")}</p>
                 </div>}
+
+                {/* Tags */}
                 <div className="flex gap-1 items-center">
                     {tags.map((tag: PonysonaTag) =>
-                        <Tag key={tag.id} tag={tag} />
+                        <Tag key={tag.id} tag={tag} redirect />
                     )}
                 </div>
 
+                {/* Attributes */}
                 {attributes.length > 0 && <>
                     <h2 className="mt-4 text-lg font-bold">Attributes</h2>
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
                     <div>
-                        {/* {attributes.map((attribute: PonysonaAppearanceAttribute) => )} */}
-                    </div>
-                </>}
-
-                {colors.length > 0 && <>
-                    <h2 className="mt-4 text-lg font-bold">Color Palette</h2>
-                    <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                    <div>
-                        {colors.map((color: string) =>
-                            <ColorPaletteEntry key={color} hex={color} />
+                        {attributes.map((attribute: PonysonaAppearanceAttribute) =>
+                            <AttributeField key={attribute.id} name={attribute.bodyPart} color={attribute.color} pattern={attribute.pattern} />
                         )}
                     </div>
                 </>}
 
-
+                {/* Description */}
                 <h2 className="mt-4 text-lg font-bold">Description</h2>
                 <hr className="h-px my-2 border-0 bg-gray-400/50" />
                 {
                     ponysona.description ? <p>{ponysona.description}</p> : <i>No description provided.</i>
                 }
 
+                {/* Metadata */}
                 <h2 className="mt-4 text-lg font-bold">Metadata</h2>
                 <hr className="h-px my-2 border-0 bg-gray-400/50" />
                 <MetadataField name="Internal ID" value={ponysona.id} />
@@ -159,6 +173,7 @@ export default async function CharacterPage({ params }: {
                 <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()}`} />
                 <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()}`} />
 
+                {/* Derivatives */}
                 <h2 className="mt-4 text-lg font-bold">Derivatives</h2>
                 <hr className="h-px my-2 border-0 bg-gray-400/50" />
                 {

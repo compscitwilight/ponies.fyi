@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { PonysonaTag } from "@/generated/client";
 import { Plus, Minus } from "lucide-react";
 
@@ -5,11 +6,13 @@ export function Tag({
     tag,
     editing,
     added,
+    redirect,
     onClick
 }: {
     tag: PonysonaTag,
     editing?: boolean,
     added?: boolean,
+    redirect?: boolean,
     onClick?: (tag: PonysonaTag) => void
 }) {
     return (
@@ -21,7 +24,9 @@ export function Tag({
                             tag.type === "trait" && "bg-orange-500 border-orange-600"
             }`}>
             <p className="text-sm text-gray-700">{tag.type}:</p>
-            <p className="text-gray-800 font-bold">{tag.name}</p>
+            <div className="text-gray-800 font-bold">
+                {redirect ? <Link href={`/?q=${tag.name}`}>{tag.name}</Link> : <p>{tag.name}</p>}
+            </div>
             {process.browser && <div onMouseDown={() => {
                 if (onClick) onClick(tag);
             }} >
