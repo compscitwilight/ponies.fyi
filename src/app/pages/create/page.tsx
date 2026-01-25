@@ -179,7 +179,6 @@ export default function CreatePage({
             setAttributes(_ => attributesCopy);
         }
         copy[bodyPart] = !copy[bodyPart];
-
         setAttributesVisibility(copy);
     }
 
@@ -495,6 +494,7 @@ export default function CreatePage({
                             {attributesVisibility["tail"] && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("tail", payload)}
                                 bodyPart="tail"
+                                defaultValue={attributes.tail}
                             />}
                         </div>
                         <div>
@@ -505,6 +505,7 @@ export default function CreatePage({
                             {attributesVisibility["coat"] && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("coat", payload)}
                                 bodyPart="coat"
+                                defaultValue={attributes.coat}
                             />}
                         </div>
                         <div>
@@ -515,6 +516,7 @@ export default function CreatePage({
                             {attributesVisibility["wings"] && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("wings", payload)}
                                 bodyPart="wings"
+                                defaultValue={attributes.wings}
                             />}
                         </div>
                         <div>
@@ -525,6 +527,7 @@ export default function CreatePage({
                             {attributesVisibility["horn"] && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("horn", payload)}
                                 bodyPart="horn"
+                                defaultValue={attributes.horn}
                             />}
                         </div>
                         <div>
@@ -535,6 +538,7 @@ export default function CreatePage({
                             {attributesVisibility["eyes"] && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("eyes", payload)}
                                 bodyPart="eyes"
+                                defaultValue={attributes.eyes}
                             />}
                         </div>
                     </div>

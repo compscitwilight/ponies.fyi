@@ -4,9 +4,6 @@ import { useState, useEffect } from "react";
 
 import { BodyPart, Pattern } from "@/generated/enums";
 
-import { LabeledColorPicker } from "./LabeledColorPicker";
-import { PonysonaAppearanceAttribute } from "@/generated/client";
-
 export interface PonysonaAttributePayload {
     part: BodyPart,
     color?: string,
@@ -15,13 +12,15 @@ export interface PonysonaAttributePayload {
 
 export function CharacterAttributeStyle({
     bodyPart,
+    defaultValue,
     onChange
 }: {
     bodyPart: BodyPart,
+    defaultValue?: PonysonaAttributePayload,
     onChange?: (payload: PonysonaAttributePayload) => void
 }) {
-    const [color, setColor] = useState<string>();
-    const [pattern, setPattern] = useState<Pattern>(Pattern.solid);
+    const [color, setColor] = useState<string>(defaultValue?.color || "#000");
+    const [pattern, setPattern] = useState<Pattern>(defaultValue?.pattern || Pattern.solid);
 
     useEffect(() => {
         if (onChange)
@@ -33,10 +32,13 @@ export function CharacterAttributeStyle({
     }, [bodyPart, color, pattern])
 
     return (
-        <form className="flex gap-1 gap-4">
+        <div className="flex gap-1 gap-4">
             <div className="flex-1 grid gap-1">
                 <label className="text-lg font-bold" htmlFor="character-attribute-color">Color</label>
-                <input onChange={(e) => setColor(e.target.value)} id="character-attribute-color" defaultValue={color} type="color" />
+                <div className="flex gap-2 items-center">
+                    <input onChange={(e) => setColor(e.target.value)} id="character-attribute-color" defaultValue={color} type="color" />
+                    <p>{color}</p>
+                </div>
             </div>
             <div className="flex-1 grid gap-1">
                 <label className="text-lg font-bold" htmlFor="character-attribute-pattern">Pattern</label>
@@ -48,6 +50,6 @@ export function CharacterAttributeStyle({
                     }
                 </select>
             </div>
-        </form>
+        </div>
     )
 }
