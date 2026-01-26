@@ -4,9 +4,11 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Plus, Github } from "lucide-react";
-import { createClient } from "lib/supabase";
 import { SearchBox } from "@/components/SearchBox";
 import "./globals.css";
+
+import { createClient } from "lib/supabase";
+import prisma from "lib/prisma";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,6 +32,7 @@ export default async function RootLayout({
 }>) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
+  const profile = user ? await prisma.profile.findUnique({ where: { userId: user.id } }) : null;
 
   return (
     <html lang="en">
@@ -47,6 +50,7 @@ export default async function RootLayout({
                 <Link href="/">[ Home ]</Link>
                 {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>}
                 <Link href="/pages/guidelines">[ Guidelines & FAQ ]</Link>
+                {profile?.isAdmin && <Link href="/pages/moderation">[ Moderation ]</Link>}
               </div>
               {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}
             </div>
