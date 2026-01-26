@@ -7,7 +7,10 @@ import { PendingPonysonaEntry } from "@/components/moderation/PendingPonysonaEnt
 export default async function ModerationPage() {
     const pendingPonysonas = await prisma.ponysona.findMany({
         where: {
-            status: PonysonaStatus.Pending
+            NOT: { status: PonysonaStatus.Approved }
+        },
+        orderBy: {
+            updatedAt: "asc"
         }
     });
 

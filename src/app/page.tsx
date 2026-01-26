@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import prisma from "lib/prisma";
-import { Ponysona, PonysonaTag } from "@/generated/client";
+import { Ponysona, PonysonaStatus, PonysonaTag } from "@/generated/client";
 import { PaginatedResults } from "@/components/PaginatedResults";
 
 function PageWarning({ children }: PropsWithChildren) {
@@ -34,7 +34,8 @@ export default async function HomePage({ searchParams }: {
           { otherNames: { has: query } },
           { description: { contains: query, mode: "default" } }
         ]
-      })
+      }),
+      status: PonysonaStatus.Approved
     },
     orderBy: { createdAt: "desc" },
     skip: (page - 1) * itemsPerPage,
