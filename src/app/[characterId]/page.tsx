@@ -5,11 +5,12 @@ import moment from "moment";
 
 import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
 import prisma from "lib/prisma";
-import { createClient } from "lib/supabase";
+import { createClient, getUserProfile } from "lib/supabase";
 
 import { Tag } from "@/components/Tag";
 import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
+import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
 
 function MetadataField({
     name, value, className
@@ -99,6 +100,8 @@ export default async function CharacterPage({ params }: {
 }) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const profile = user ? await getUserProfile(user) : null;
+
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
         where: { slug: characterId }
@@ -139,7 +142,10 @@ export default async function CharacterPage({ params }: {
                     <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
                     <div className="flex items-center gap-2">
                         {(user !== null) && <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>}
-                        <Link className="text-red-600 underline" href={`/${ponysona.id}/report`}>Report</Link>
+                        {/* {(user !== null && profile?.isAdmin) && <form action={test}>
+                            <button type="submit" className="text-yellow-600 underline cursor-pointer">Lock</button>
+                        </form>} */}
+                        {(user !== null && profile?.isAdmin) && <PonysonaLockToggle ponysona={ponysona} />}
                     </div>
                 </div>
                 {ponysona.otherNames.length > 0 && <div className="flex gap-1 items-center">

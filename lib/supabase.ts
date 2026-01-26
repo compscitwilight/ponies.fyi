@@ -1,6 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
+import type { User } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import prisma from "lib/prisma";
 
 export async function createRouterClient(request: Request, response: NextResponse) {
     const cookieHeader = request.headers.get("cookie") ?? "";
@@ -41,4 +43,9 @@ export async function createClient() {
             }
         }
     );
+}
+
+export async function getUserProfile(user: User) {
+    const profile = await prisma.profile.findUnique({ where: { userId: user.id } });
+    return profile;
 }

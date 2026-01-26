@@ -13,14 +13,23 @@ enum PonysonaStatus {
     Hidden
 }
 
+model Profile {
+    userId    String   @id
+    isAdmin   Boolean  @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
 model Ponysona {
-    id          String                        @id @default(uuid())
-    slug        String                        @unique
+    id          String         @id @default(uuid())
+    slug        String         @unique
     originalId  String? /* used by ponysonas that are derivative forms of another */
     primaryName String
     otherNames  String[]
     description String?
-    status      PonysonaStatus                @default(Pending)
+    status      PonysonaStatus @default(Pending)
+    locked      Boolean        @default(false)
+
     tagIds      Int[] /* reference PonysonaTag */
     sources     String[]
     creators    String[]
