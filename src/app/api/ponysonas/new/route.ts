@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
-import { array, mixed, number, object, string, ValidationError } from "yup";
+import { ValidationError } from "yup";
 
 import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { MediaStatus } from "@/generated/enums";
-import { PonysonaBody as NewPonysonaBody } from "lib/ponysonas";
+import { PonysonaBody as NewPonysonaBody, HexColorRegex } from "lib/ponysonas";
 
 export async function POST(request: Request) {
     const requestHeaders = await headers();
@@ -44,14 +44,21 @@ export async function POST(request: Request) {
             });
 
             if (validatedBody.attributes) {
-                for (const [, attributes] of Object.entries(validatedBody.attributes)) {
-                    if (!attributes || !attributes.part) continue
+                for (const [, attribute] of Object.entries(validatedBody.attributes)) {
+                    if (!attribute || !attribute.part) continue;
+                    for (const color of attribute.colors)
+                        if (!HexColorRegex.exec(color))
+                            return NextResponse.json(
+                                { message: `Invalid hex code ${color} provided` },
+                                { status: 400 }
+                            );
+
                     await tx.ponysonaAppearanceAttribute.create({
                         data: {
                             ponysonaId: newPonysona.id,
-                            bodyPart: attributes.part,
-                            colors: attributes.colors,
-                            pattern: attributes.pattern
+                            bodyPart: attribute.part,
+                            colors: attribute.colors,
+                            pattern: attribute.pattern
                         }
                     })
                 }

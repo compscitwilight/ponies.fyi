@@ -4,6 +4,7 @@ import React, { FormEvent, useState, useEffect, PropsWithChildren } from "react"
 // import { redirect } from "next/navigation";
 import type { Ponysona, BodyPart, MediaType, PonysonaTag, PonysonaAppearanceAttribute, Media } from "@/generated/client";
 import { Asterisk } from "lucide-react";
+import { supabase } from "@/lib/auth";
 import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
 
 import { Tag } from "@/components/Tag";
@@ -247,6 +248,10 @@ export default function CreatePage({
                         })
                         .finally(() => setExistingSlug(data.slug));
                 })
+
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (!session) window.location.assign("/?state=unauthorized");
+        })
     }, [setAvailableTags])
 
     return (editing ? editing && existingSlug : true) && (

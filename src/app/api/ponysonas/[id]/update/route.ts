@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { ValidationError } from "yup";
 import prisma from "lib/prisma";
 import { StatusMessages } from "lib/errors";
-import { PonysonaBody as UpdatePonysonaBody } from "lib/ponysonas";
+import { PonysonaBody as UpdatePonysonaBody, HexColorRegex } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { MediaStatus, MediaType } from "@/generated/enums";
 
@@ -60,6 +60,13 @@ export async function PUT(
             if (validatedBody.attributes) {
                 for (const attribute of Object.values(validatedBody.attributes)) {
                     if (!attribute || !attribute.part || !attribute.pattern) continue;
+                    for (const color of attribute.colors)
+                        if (!HexColorRegex.exec(color))
+                            return NextResponse.json(
+                                { message: `Invalid hex code ${color} provided` },
+                                { status: 400 }
+                            );
+
                     const existingAttribute = await tx.ponysonaAppearanceAttribute.findFirst({
                         where: {
                             ponysonaId: ponysona.id,
