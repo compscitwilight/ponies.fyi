@@ -22,6 +22,7 @@ export default async function ModerationLayout({
 
     return (
         <div>
+            <h1 className="text-3xl font-bold">Moderation</h1>
             {children}
         </div>
     )

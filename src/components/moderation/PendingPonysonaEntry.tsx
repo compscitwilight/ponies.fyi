@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Ponysona, PonysonaStatus } from "@/generated/client";
+import { PonysonaStatusDropdown } from "./PonysonaStatusDropdown";
 
 export function PendingPonysonaEntry({ ponysona }: {
     ponysona: Ponysona
@@ -40,15 +41,7 @@ export function PendingPonysonaEntry({ ponysona }: {
             <div>
                 <div className="flex gap-1">
                     <label className="text-lg font-bold" htmlFor="ponysona-status">Status</label>
-                    <select
-                        value={status}
-                        onChange={(e) => changeStatus(e.target.value as PonysonaStatus)}
-                        id="ponysona-status"
-                    >
-                        <option value="Pending">Pending</option>
-                        <option value="Approved">Approved</option>
-                        <option value="Hidden">Hidden</option>
-                    </select>
+                    <PonysonaStatusDropdown ponysona={ponysona} id="ponysona-status" />
                 </div>
             </div>
         </div>

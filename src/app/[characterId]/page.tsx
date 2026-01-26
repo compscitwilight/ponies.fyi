@@ -11,6 +11,7 @@ import { Tag } from "@/components/Tag";
 import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
 import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
+import { PonysonaStatusDropdown } from "@/components/moderation/PonysonaStatusDropdown";
 
 function MetadataField({
     name, value, className
@@ -145,7 +146,10 @@ export default async function CharacterPage({ params }: {
                         {/* {(user !== null && profile?.isAdmin) && <form action={test}>
                             <button type="submit" className="text-yellow-600 underline cursor-pointer">Lock</button>
                         </form>} */}
-                        {(user !== null && profile?.isAdmin) && <PonysonaLockToggle ponysona={ponysona} />}
+                        {(profile?.isAdmin) && <>
+                            <PonysonaLockToggle ponysona={ponysona} />
+                            <PonysonaStatusDropdown ponysona={ponysona} />
+                        </>}
                     </div>
                 </div>
                 {ponysona.otherNames.length > 0 && <div className="flex gap-1 items-center">
