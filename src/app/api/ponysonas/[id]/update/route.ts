@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { ValidationError } from "yup";
 import prisma from "lib/prisma";
+import { createClient } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import { PonysonaBody as UpdatePonysonaBody, HexColorRegex } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
@@ -15,6 +16,13 @@ export async function PUT(
         }>
     }
 ) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return NextResponse.json(
+        { message: StatusMessages.NOT_AUTHENTICATED },
+        { status: 401 }
+    );
+    
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
