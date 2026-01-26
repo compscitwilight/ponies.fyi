@@ -19,7 +19,7 @@ export default async function HomePage({ searchParams }: {
   searchParams: Promise<{
     page?: string,
     q?: string,
-    state?: "ponysona_not_found" | "page_not_found"
+    state?: "ponysona_not_found" | "page_not_found" | "auth_error" | "logged_out" | "unauthorized"
   }>
 }) {
   const { page: pageParam, q: query, state: pageState } = await searchParams;
@@ -58,6 +58,21 @@ export default async function HomePage({ searchParams }: {
       {
         pageState === "ponysona_not_found" &&
         <PageWarning>The ponysona requested could not be found</PageWarning>
+      }
+
+      {
+        pageState === "auth_error" &&
+        <PageWarning>An unexpected error occurred while authenticating.</PageWarning>
+      }
+
+      {
+        pageState === "logged_out" &&
+        <PageWarning>Logged out successfully.</PageWarning>
+      }
+
+      {
+        pageState === "unauthorized" &&
+        <PageWarning>You are not allowed to access that page.</PageWarning>
       }
 
       <h1 className="text-3xl font-bold">Home</h1>

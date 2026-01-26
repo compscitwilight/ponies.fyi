@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Plus, Github } from "lucide-react";
+import { createClient } from "lib/supabase";
 import { SearchBox } from "@/components/SearchBox";
 import "./globals.css";
 
@@ -26,6 +28,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
   return (
     <html lang="en">
       <body
@@ -40,7 +45,7 @@ export default async function RootLayout({
               </div>
               <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center">
                 <Link href="/">[ Home ]</Link>
-                <Link href="/pages/auth">[ Login ]</Link>
+                {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>}
                 <Link href="/pages/guidelines">[ Guidelines & FAQ ]</Link>
               </div>
               {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}

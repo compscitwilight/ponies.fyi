@@ -6,7 +6,7 @@ export function PonysonaResult({ ponysona }: {
     ponysona: Ponysona & { tags: Array<PonysonaTag> }
 }) {
     return (
-        <div className="border border-gray-400 rounded-md p-2">
+        <div className="border border-gray-400/50 rounded-md p-2">
             <div className="overflow-hidden">
                 <img
                     className="object-fit max-h-[256px] max-w-[256px] m-auto"
