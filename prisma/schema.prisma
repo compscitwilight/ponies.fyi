@@ -80,14 +80,14 @@ model PonysonaAppearanceAttribute {
     id         String   @id @default(uuid())
     ponysonaId String
     bodyPart   BodyPart
-    color      String   @default("#000000")
+    colors     String[]
     pattern    Pattern  @default(solid)
 
     ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    @@unique([ponysonaId, bodyPart, color, pattern])
+    @@unique([ponysonaId, bodyPart])
 }
 
 model PonysonaRevision {

@@ -50,7 +50,7 @@ export async function POST(request: Request) {
                         data: {
                             ponysonaId: newPonysona.id,
                             bodyPart: attributes.part,
-                            color: attributes.color,
+                            colors: attributes.colors,
                             pattern: attributes.pattern
                         }
                     })

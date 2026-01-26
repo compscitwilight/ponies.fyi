@@ -5,7 +5,7 @@ import { MediaType, Ponysona, BodyPart, Pattern } from "@/generated/client";
 
 const PonysonaAttributeBody = object({
     part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).optional(),
-    color: string().optional(),
+    colors: array(string().required()).optional().default(new Array<string>()),
     pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
 });
 

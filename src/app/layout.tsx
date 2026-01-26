@@ -30,11 +30,18 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="flex lg:w-2/3 m-auto border-b border-gray-400/50">
-          <div className="flex flex-1 items-center gap-1">
-            <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
-            <Link href="/" className="font-equestria ml-4">ponies.fyi</Link>
-            <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p>
+        <div className="flex flex-col lg:flex-row lg:w-2/3 m-auto border-b border-gray-400/50">
+          <div className="flex flex-col lg:flex-row flex-1 items-center gap-4">
+            <div className="flex items-center gap-1">
+              <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
+              <Link href="/" className="font-equestria ml-4">ponies.fyi</Link>
+            </div>
+            <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center">
+              <Link href="/">[ Home ]</Link>
+              <Link href="/pages/auth">[ Login ]</Link>
+              <Link href="/pages/guidelines">[ Guidelines & FAQ ]</Link>
+            </div>
+            {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}
           </div>
           <SearchBox />
           <div className="flex items-center gap-4 mr-4">

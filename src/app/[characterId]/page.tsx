@@ -8,7 +8,6 @@ import prisma from "lib/prisma";
 
 import { Tag } from "@/components/Tag";
 import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
-import { ColorPaletteEntry } from "@/components/ColorPaletteEntry";
 import { PonysonaResult } from "@/components/PonysonaResult";
 
 function MetadataField({
@@ -24,17 +23,20 @@ function MetadataField({
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
-    name, color, pattern 
-}: { name: string, color: string, pattern?: Pattern }) {
+    name, colors, pattern 
+}: { name: string, colors: Array<string>, pattern?: Pattern }) {
     return (
         <div className="flex">
             <b className="flex-1">{name}</b>
             <div className="flex flex-2 gap-2 items-center">
                 <p>{pattern}</p>
-                <div
-                    className="text-xs text-gray-400 p-2 border border-black"
-                    style={{ backgroundColor: color }}
-                >{color}</div>
+                {
+                    colors.map((color: string) =>
+                        <div key={color} className="text-xs font-bold p-2 border border-gray-500" style={{ backgroundColor: color }}>
+                            {color}
+                        </div>
+                    )
+                }
             </div>
         </div>
     )
@@ -85,7 +87,7 @@ export async function generateViewport({ params }: {
     });
 
     return {
-        themeColor: firstAttribute ? firstAttribute.color : "#3bb47eff"
+        themeColor: (firstAttribute && firstAttribute.colors.length > 0) ? firstAttribute.colors[0] : "#3bb47eff"
     };
 }
 
@@ -111,8 +113,13 @@ export default async function CharacterPage({ params }: {
     });
 
     const derivatives = await prisma.ponysona.findMany({
-        where: { originalId: ponysona.id }
-    });
+        where: { originalId: ponysona.id },
+    }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
+
+    for (const derivative of derivatives)
+        derivative.tags = await Promise.all(derivative.tagIds.map((tagId: number) =>
+            prisma.ponysonaTag.findUnique({ where: { id: tagId } })
+        )) as Array<PonysonaTag>;
 
     const tags = new Array<PonysonaTag>();
     for (const id of ponysona.tagIds) {
@@ -120,8 +127,6 @@ export default async function CharacterPage({ params }: {
         if (tag === null) continue;
         tags.push(tag);
     }
-
-    const colors = attributes.map((att: PonysonaAppearanceAttribute) => att.color);
 
     return (
         <div className="flex flex-col w-9/10 m-auto lg:flex-row lg:w-full gap-2">
@@ -152,7 +157,7 @@ export default async function CharacterPage({ params }: {
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
                     <div>
                         {attributes.map((attribute: PonysonaAppearanceAttribute) =>
-                            <AttributeField key={attribute.id} name={attribute.bodyPart} color={attribute.color} pattern={attribute.pattern} />
+                            <AttributeField key={attribute.id} name={attribute.bodyPart} colors={attribute.colors} pattern={attribute.pattern} />
                         )}
                     </div>
                 </>}
@@ -181,7 +186,7 @@ export default async function CharacterPage({ params }: {
                     derivatives.length > 0 ? (
                         <div>
                             {
-                                derivatives.map((derivative: Ponysona) =>
+                                derivatives.map((derivative: Ponysona & { tags: Array<PonysonaTag> }) =>
                                     <PonysonaResult key={derivative.id} ponysona={derivative} />
                                 )
                             }

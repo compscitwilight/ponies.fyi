@@ -226,7 +226,7 @@ export default function CreatePage({
                         for (const attribute of data.attributes) {
                             assignAttribute(attribute.bodyPart, {
                                 part: attribute.bodyPart,
-                                color: attribute.color,
+                                colors: attribute.colors,
                                 pattern: attribute.pattern
                             } as PonysonaAttributePayload);
                             toggleAttributeStylizer(attribute.bodyPart);

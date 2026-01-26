@@ -59,7 +59,7 @@ export async function PUT(
             // update attributes //
             if (validatedBody.attributes) {
                 for (const attribute of Object.values(validatedBody.attributes)) {
-                    if (!attribute || !attribute.color || !attribute.part || !attribute.pattern) continue;
+                    if (!attribute || !attribute.part || !attribute.pattern) continue;
                     const existingAttribute = await tx.ponysonaAppearanceAttribute.findFirst({
                         where: {
                             ponysonaId: ponysona.id,
@@ -71,7 +71,7 @@ export async function PUT(
                         await tx.ponysonaAppearanceAttribute.update({
                             where: { id: existingAttribute.id },
                             data: {
-                                color: attribute.color,
+                                colors: attribute.colors,
                                 pattern: attribute.pattern
                             }
                         });
@@ -80,7 +80,7 @@ export async function PUT(
                             data: {
                                 ponysonaId: ponysona.id,
                                 bodyPart: attribute.part,
-                                color: attribute.color,
+                                colors: attribute.colors,
                                 pattern: attribute.pattern
                             }
                         });
