@@ -5,6 +5,7 @@ import moment from "moment";
 
 import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
 import prisma from "lib/prisma";
+import { createClient } from "lib/supabase";
 
 import { Tag } from "@/components/Tag";
 import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
@@ -23,7 +24,7 @@ function MetadataField({
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
-    name, colors, pattern 
+    name, colors, pattern
 }: { name: string, colors: Array<string>, pattern?: Pattern }) {
     return (
         <div className="flex">
@@ -96,6 +97,8 @@ export default async function CharacterPage({ params }: {
         characterId: string
     }>
 }) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
         where: { slug: characterId }
@@ -135,7 +138,7 @@ export default async function CharacterPage({ params }: {
                 <div className="flex items-center mr-4">
                     <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
                     <div className="flex items-center gap-2">
-                        <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>
+                        {(user !== null) && <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>}
                         <Link className="text-red-600 underline" href={`/${ponysona.id}/report`}>Report</Link>
                     </div>
                 </div>
