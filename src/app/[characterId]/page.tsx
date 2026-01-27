@@ -12,17 +12,8 @@ import { Pattern, Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/g
 import { PonysonaResult } from "@/components/PonysonaResult";
 import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
 import { PonysonaStatusDropdown } from "@/components/moderation/PonysonaStatusDropdown";
-
-function MetadataField({
-    name, value, className
-}: { name: string, value: any, className?: string }) {
-    return (
-        <div className={className || "flex"}>
-            <b className="flex-1">{name}</b>
-            <p className="flex-2">{value}</p>
-        </div>
-    )
-}
+import { PonysonaGallery } from "@/components/PonysonaGallery";
+import { MetadataField } from "@/components/ponysonas/MetadataField";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
@@ -113,7 +104,7 @@ export default async function CharacterPage({ params }: {
 
     const previewImageRes = await getPonysonaPreview(ponysona);
     const markImageRes = await getPonysonaMark(ponysona);
-    // const galleryObjects = await getPonysonaGallery(ponysona);
+    const galleryObjects = await getPonysonaGallery(ponysona);
 
     const attributes = await prisma.ponysonaAppearanceAttribute.findMany({
         where: { ponysonaId: ponysona.id }
@@ -137,83 +128,89 @@ export default async function CharacterPage({ params }: {
 
     return (
         <div className="flex flex-col w-9/10 m-auto lg:flex-row lg:w-full gap-2">
-            {/* Information */}
-            <div className="flex-2 rounded-lg border p-2 border-gray-400/50">
-                <div className="flex items-center mr-4">
-                    <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
-                    <div className="flex items-center gap-2">
-                        {(user !== null) && <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>}
-                        {/* {(user !== null && profile?.isAdmin) && <form action={test}>
+            <div className="grid gap-4 flex-2">
+                {/* Information */}
+                <div className="rounded-lg border p-2 border-gray-400/50">
+                    <div className="flex items-center mr-4">
+                        <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
+                        <div className="flex items-center gap-2">
+                            <Link href={`/${ponysona.slug}/revisions`} className="text-green-600 underline">Revisions</Link>
+                            {(user !== null) && <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>}
+                            {/* {(user !== null && profile?.isAdmin) && <form action={test}>
                             <button type="submit" className="text-yellow-600 underline cursor-pointer">Lock</button>
                         </form>} */}
-                        {(profile?.isAdmin) && <>
-                            <PonysonaLockToggle ponysona={ponysona} />
-                            <PonysonaStatusDropdown ponysona={ponysona} />
-                        </>}
+                            {(profile?.isAdmin) && <>
+                                <PonysonaLockToggle ponysona={ponysona} />
+                                <PonysonaStatusDropdown ponysona={ponysona} />
+                            </>}
+                        </div>
                     </div>
-                </div>
-                {ponysona.otherNames.length > 0 && <div className="flex gap-1 items-center">
-                    <h2 className="text-lg">Other names:</h2>
-                    <p className="font-bold">{ponysona.otherNames.join(", ")}</p>
-                </div>}
+                    {ponysona.otherNames.length > 0 && <div className="flex gap-1 items-center">
+                        <h2 className="text-lg">Other names:</h2>
+                        <p className="font-bold">{ponysona.otherNames.join(", ")}</p>
+                    </div>}
 
-                {/* Tags */}
-                <div className="flex gap-1 items-center">
-                    {tags.map((tag: PonysonaTag) =>
-                        <Tag key={tag.id} tag={tag} redirect />
-                    )}
-                </div>
-
-                {/* Attributes */}
-                {attributes.length > 0 && <>
-                    <h2 className="mt-4 text-lg font-bold">Attributes</h2>
-                    <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                    <div>
-                        {attributes.map((attribute: PonysonaAppearanceAttribute) =>
-                            <AttributeField key={attribute.id} name={attribute.bodyPart} colors={attribute.colors} pattern={attribute.pattern} />
+                    {/* Tags */}
+                    <div className="flex gap-1 items-center">
+                        {tags.map((tag: PonysonaTag) =>
+                            <Tag key={tag.id} tag={tag} redirect />
                         )}
                     </div>
-                </>}
 
-                {/* Description */}
-                <h2 className="mt-4 text-lg font-bold">Description</h2>
-                <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                {
-                    ponysona.description ? <p>{ponysona.description}</p> : <i>No description provided.</i>
-                }
-
-                {/* Metadata */}
-                <h2 className="mt-4 text-lg font-bold">Metadata</h2>
-                <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                <MetadataField name="Internal ID" value={ponysona.id} />
-                <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
-                <MetadataField name="Sources" value={ponysona.sources.length > 0 ? ponysona.sources.join(", ") : "not provided"} />
-                <MetadataField name="Status" value={ponysona.status} />
-                <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
-                <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
-
-                {/* Derivatives */}
-                <h2 className="mt-4 text-lg font-bold">Derivatives</h2>
-                <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                {
-                    derivatives.length > 0 ? (
+                    {/* Attributes */}
+                    {attributes.length > 0 && <>
+                        <h2 className="mt-4 text-lg font-bold">Attributes</h2>
+                        <hr className="h-px my-2 border-0 bg-gray-400/50" />
                         <div>
-                            {
-                                derivatives.map((derivative: Ponysona & { tags: Array<PonysonaTag> }) =>
-                                    <PonysonaResult key={derivative.id} ponysona={derivative} />
-                                )
-                            }
+                            {attributes.map((attribute: PonysonaAppearanceAttribute) =>
+                                <AttributeField key={attribute.id} name={attribute.bodyPart} colors={attribute.colors} pattern={attribute.pattern} />
+                            )}
                         </div>
-                    ) : (
-                        <div className="font-bold">
-                            <p>No derivative ponysonas could be found.</p>
-                            <Link
-                                className="text-sky-600 underline"
-                                href={`/pages/create?derivativeof=${ponysona.id}`}
-                            >Consider adding one if relevant!</Link>
-                        </div>
-                    )
-                }
+                    </>}
+
+                    {/* Description */}
+                    <h2 className="mt-4 text-lg font-bold">Description</h2>
+                    <hr className="h-px my-2 border-0 bg-gray-400/50" />
+                    {
+                        ponysona.description ? <p>{ponysona.description}</p> : <i>No description provided.</i>
+                    }
+
+                    {/* Metadata */}
+                    <h2 className="mt-4 text-lg font-bold">Metadata</h2>
+                    <hr className="h-px my-2 border-0 bg-gray-400/50" />
+                    <MetadataField name="Internal ID" value={ponysona.id} />
+                    <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
+                    <MetadataField name="Sources" value={ponysona.sources.length > 0 ? ponysona.sources.join(", ") : "not provided"} />
+                    <MetadataField name="Status" value={ponysona.status} />
+                    <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
+                    <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
+
+                    {/* Derivatives */}
+                    <h2 className="mt-4 text-lg font-bold">Derivatives</h2>
+                    <hr className="h-px my-2 border-0 bg-gray-400/50" />
+                    {
+                        derivatives.length > 0 ? (
+                            <div>
+                                {
+                                    derivatives.map((derivative: Ponysona & { tags: Array<PonysonaTag> }) =>
+                                        <PonysonaResult key={derivative.id} ponysona={derivative} />
+                                    )
+                                }
+                            </div>
+                        ) : (
+                            <div className="font-bold">
+                                <p>No derivative ponysonas could be found.</p>
+                                <Link
+                                    className="text-sky-600 underline"
+                                    href={`/pages/create?derivativeof=${ponysona.id}`}
+                                >Consider adding one if relevant!</Link>
+                            </div>
+                        )
+                    }
+                </div>
+
+                {/* Gallery */}
+                <PonysonaGallery ponysona={ponysona} gallery={galleryObjects} />
             </div>
 
             {/* Media */}

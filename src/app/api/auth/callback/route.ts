@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     if (!next.startsWith("/")) next = "/";
 
     const forwardedHost = request.headers.get("x-forwarded-host");
-    const isLocalEnv = process.env.NEXT_PUBLIC_NODE_ENV === "development";
+    const isLocalEnv = process.env.NODE_ENV === "development";
     let redirectUrl = !isLocalEnv && forwardedHost ? `https://${forwardedHost}${next}` : `${origin}${next}`;
     const response = NextResponse.redirect(redirectUrl);
 

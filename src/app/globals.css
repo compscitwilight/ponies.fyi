@@ -9,7 +9,45 @@ body {
   src: url('/equestria.ttf');
 }
 
+@font-face {
+  font-family: 'lexiereadable';
+  src: url('/LexieReadable-Regular.ttf');
+}
+
+@font-face {
+  font-family: 'lexiereadablebold';
+  src: url('/LexieReadable-Bold.ttf');
+}
+
 .font-equestria {
   font-family: 'equestria';
   font-size: 50;
+}
+
+.font-lexie {
+  font-family: 'lexiereadable';
+}
+
+.font-lexie-bold {
+  font-family: 'lexiereadablebold';
+}
+
+.string {
+  color: green;
+}
+
+.number {
+  color: darkorange;
+}
+
+.boolean {
+  color: blue;
+}
+
+.null {
+  color: magenta;
+}
+
+.key {
+  color: red;
 }
