@@ -16,8 +16,8 @@ enum PonysonaStatus {
 model Profile {
     userId                 String   @id
     isAdmin                Boolean  @default(false)
-    canUpload              Boolean  @default(false)
-    canRemoveGalleryImages Boolean  @default(false)
+    canUpload              Boolean  @default(true) // only applies to gallery images
+    canRemoveGalleryImages Boolean  @default(true)
     createdAt              DateTime @default(now())
     updatedAt              DateTime @updatedAt
 }
@@ -55,8 +55,8 @@ enum MediaType {
 
 enum MediaStatus {
     pending /* added */
-    uploaded /* committed */
-    finalized /* pushed */
+    uploaded /* pushed */
+    finalized /* committed */
 }
 
 model Media {
