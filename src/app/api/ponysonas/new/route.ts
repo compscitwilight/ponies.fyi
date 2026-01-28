@@ -45,7 +45,7 @@ export async function POST(request: Request) {
 
             if (validatedBody.attributes) {
                 for (const [, attribute] of Object.entries(validatedBody.attributes)) {
-                    if (!attribute || !attribute.part) continue;
+                    if (!attribute) continue;
                     for (const color of attribute.colors)
                         if (!HexColorRegex.exec(color))
                             return NextResponse.json(

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
-import { Image } from "lucide-react";
+import { useState, ChangeEvent } from "react";
+import { Image, X } from "lucide-react";
 import { MediaType } from "@/generated/enums";
 
 /**
@@ -20,7 +20,8 @@ export function MediaUpload({
     maxResH,
     supportedFormats,
     defaultValue,
-    onUploadComplete
+    onUploadComplete,
+    onMediaRemoved
 }: {
     type: MediaType,
     id?: string,
@@ -28,13 +29,14 @@ export function MediaUpload({
     maxResH?: number,
     supportedFormats?: Array<string>,
     defaultValue?: string | any,
-    onUploadComplete?: (uuid: string) => void
+    onUploadComplete?: (uuid: string) => void,
+    onMediaRemoved?: () => void
 }) {
     const [uploadProgress, setUploadProgress] = useState<string>();
     const [uploadComplete, setUploadComplete] = useState<boolean>(defaultValue !== undefined);
     const [finalizing, setFinalizing] = useState<boolean>();
     const [uploadError, setUploadError] = useState<string>();
-    const [uuid, setUUID] = useState<string>(defaultValue);
+    const [uuid, setUUID] = useState<string | undefined>(defaultValue);
 
     function onFileUpload(ev: ChangeEvent<HTMLInputElement>) {
         if (!ev.target.files) {
@@ -97,6 +99,12 @@ export function MediaUpload({
             })
     }
 
+    function onAttachmentRemove() {
+        setUploadComplete(false);
+        setUUID(undefined);
+        if (onMediaRemoved) onMediaRemoved();
+    }
+
     return (
         <div>
             <div className={`relative w-full ${uploadComplete ? "h-fit" : "h-[256px]"} rounded-md border border-gray-400/50 transition-border duration-200 hover:border-gray-400/75`}>
@@ -113,9 +121,15 @@ export function MediaUpload({
                         {(supportedFormats && supportedFormats.length > 0) && `Supported types ${supportedFormats?.join(",")}. `}
                         {(maxResW && maxResH) && `Max image size ${maxResW}x${maxResH}`}
                     </label>
-                </> : <>
+                </> : <div className="w-fit m-auto relative">
+                    <div
+                        onMouseDown={onAttachmentRemove}
+                        className="absolute right-0 m-2 p-2 rounded-full bg-gray-600/50 w-fit transition-bg duration-200 hover:bg-gray-600/50 text-white cursor-pointer"
+                    >
+                        <X />
+                    </div>
                     <img className="m-auto my-2" src={`https://static.ponies.fyi/${uuid}`} />
-                </>}
+                </div>}
 
 
                 {/* upload indicator */}

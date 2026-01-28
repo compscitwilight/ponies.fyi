@@ -4,9 +4,9 @@ import prisma from "./prisma";
 import { MediaType, Ponysona, BodyPart, Pattern } from "@/generated/client";
 
 const PonysonaAttributeBody = object({
-    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).optional(),
-    colors: array(string().required()).optional().default(new Array<string>()),
-    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).optional()
+    part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
+    colors: array(string().required()).required(),
+    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).required()
 });
 
 export const HexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
@@ -19,13 +19,13 @@ export const PonysonaBody = object({
     sources: array(string().required()).optional().default(new Array<string>()),
     creators: array(string().required()).optional().default(new Array<string>()),
     attributes: object({
-        mane: PonysonaAttributeBody.nullable().optional(),
-        tail: PonysonaAttributeBody.nullable().optional(),
-        coat: PonysonaAttributeBody.nullable().optional(),
-        wings: PonysonaAttributeBody.nullable().optional(),
-        horn: PonysonaAttributeBody.nullable().optional(),
-        eyes: PonysonaAttributeBody.nullable().optional()
-    }).optional(),
+        mane: PonysonaAttributeBody.nullable().default(undefined),
+        tail: PonysonaAttributeBody.nullable().default(undefined),
+        coat: PonysonaAttributeBody.nullable().default(undefined),
+        wings: PonysonaAttributeBody.nullable().default(undefined),
+        horn: PonysonaAttributeBody.nullable().default(undefined),
+        eyes: PonysonaAttributeBody.nullable().default(undefined)
+    }).nullable().notRequired(),
     media: object({
         preview: string().nullable().optional(),
         mark: string().nullable().optional()

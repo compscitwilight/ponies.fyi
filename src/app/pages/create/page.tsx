@@ -32,7 +32,7 @@ function PonysonaAttributeHeader({
     children
 }: {
     toggled?: boolean,
-    onToggle: () => void,
+    onToggle?: () => void,
 } & PropsWithChildren) {
     const bodyPart = children as string;
     return (
@@ -64,11 +64,10 @@ export default function CreatePage({
     const [tagIds, setTagIds] = useState<Array<number>>(new Array<number>());
     const [sources, setSources] = useState<Array<string>>(new Array<string>());
     const [creators, setCreators] = useState<Array<string>>(new Array<string>());
-    const [attributes, setAttributes] = useState<PonysonaAttributeKV<PonysonaAttributePayload>>({} as any);
+    const [attributes, setAttributes] = useState<PonysonaAttributeKV<PonysonaAttributePayload | null>>({} as any);
     const [media, setMedia] = useState<{ preview?: string, mark?: string }>({} as any);
 
     const [includeOtherNames, setIncludeOtherNames] = useState<boolean>(false);
-    const [attributesVisibility, setAttributesVisibility] = useState<PonysonaAttributeKV<boolean>>({} as any);
     const [otherNameVal, setOtherNameVal] = useState<string>("");
     const [sourceVal, setSourceVal] = useState<string>("");
     const [creatorVal, setCreatorVal] = useState<string>("");
@@ -166,27 +165,12 @@ export default function CreatePage({
         } else setTagIds(ids => [...ids, tag.id]);
     }
 
-    function assignAttribute(part: BodyPart, data: PonysonaAttributePayload) {
-        const copy = Object.assign({}, attributes);
-        copy[part] = data;
-        setAttributes(copy);
+    function assignAttribute(part: BodyPart, data: PonysonaAttributePayload | null) {
+        setAttributes(prev => ({ ...prev, [part]: data }));
     }
 
-    function toggleAttributeStylizer(bodyPart: BodyPart) {
-        const copy = Object.assign({}, attributesVisibility);
-        if (copy[bodyPart]) {
-            const attributesCopy = Object.assign({}, attributes);
-            delete attributesCopy[bodyPart];
-            setAttributes(_ => attributesCopy);
-        }
-        copy[bodyPart] = !copy[bodyPart];
-        setAttributesVisibility(copy);
-    }
-
-    function assignMedia(type: MediaType, uuid: string) {
-        const copy = Object.assign({}, media) as any;
-        copy[type] = uuid;
-        setMedia(copy);
+    function assignMedia(type: MediaType, uuid: string | null) {
+        setMedia(prev => ({ ...prev, [type]: uuid }));
     }
 
     useEffect(() => {
@@ -206,7 +190,7 @@ export default function CreatePage({
         if (editing)
             fetch(`/api/ponysonas/${editing}`, { method: "GET" })
                 .then((response) => {
-                    if (response.status !== 200) window.location.assign("/pages/create");
+                    if (response.status !== 200) window.location.assign("/?state=ponysona_not_found");
                     return response.json();
                 })
                 .then((json: any) => {
@@ -230,7 +214,6 @@ export default function CreatePage({
                                 colors: attribute.colors,
                                 pattern: attribute.pattern
                             } as PonysonaAttributePayload);
-                            toggleAttributeStylizer(attribute.bodyPart);
                         }
                     };
 
@@ -252,7 +235,7 @@ export default function CreatePage({
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (!session) window.location.assign("/?state=unauthorized");
         })
-    }, [setAvailableTags])
+    }, [setAvailableTags, setAttributes])
 
     return (editing ? editing && existingSlug : true) && (
         <div className="mb-16">
@@ -264,6 +247,7 @@ export default function CreatePage({
                         <label className="text-xl font-bold" htmlFor="media-upload">Primary artwork</label>
                         <MediaUpload
                             onUploadComplete={(uuid: string) => assignMedia("preview", uuid)}
+                            onMediaRemoved={() => assignMedia("preview", null)}
                             type="preview"
                             id="media-upload"
                             defaultValue={media.preview}
@@ -273,6 +257,7 @@ export default function CreatePage({
                         <label className="text-xl font-bold" htmlFor="cutie-mark-upload">Cutie mark</label>
                         <MediaUpload
                             onUploadComplete={(uuid: string) => assignMedia("mark", uuid)}
+                            onMediaRemoved={() => assignMedia("mark", null)}
                             type="mark"
                             id="cutie-mark-upload"
                             defaultValue={media.mark}
@@ -493,57 +478,52 @@ export default function CreatePage({
                     <div className="grid gap-2 items-center">
                         <div>
                             <PonysonaAttributeHeader
-                                toggled={attributesVisibility["tail"]}
-                                onToggle={() => toggleAttributeStylizer("tail")}
+                                toggled={attributes.tail !== null && attributes.tail !== undefined}
                             >Tail</PonysonaAttributeHeader>
-                            {attributesVisibility["tail"] && <CharacterAttributeStyle
+                            {attributes.tail && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("tail", payload)}
                                 bodyPart="tail"
-                                defaultValue={attributes.tail}
+                                defaultValue={attributes.tail || undefined}
                             />}
                         </div>
                         <div>
                             <PonysonaAttributeHeader
-                                toggled={attributesVisibility["coat"]}
-                                onToggle={() => toggleAttributeStylizer("coat")}
+                                toggled={attributes.coat !== null && attributes.coat !== undefined}
                             >Coat</PonysonaAttributeHeader>
-                            {attributesVisibility["coat"] && <CharacterAttributeStyle
+                            {attributes.coat && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("coat", payload)}
                                 bodyPart="coat"
-                                defaultValue={attributes.coat}
+                                defaultValue={attributes.coat || undefined}
                             />}
                         </div>
                         <div>
                             <PonysonaAttributeHeader
-                                toggled={attributesVisibility["wings"]}
-                                onToggle={() => toggleAttributeStylizer("wings")}
+                                toggled={attributes.wings !== null && attributes.wings !== undefined}
                             >Wings</PonysonaAttributeHeader>
-                            {attributesVisibility["wings"] && <CharacterAttributeStyle
+                            {attributes.wings && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("wings", payload)}
                                 bodyPart="wings"
-                                defaultValue={attributes.wings}
+                                defaultValue={attributes.wings || undefined}
                             />}
                         </div>
                         <div>
                             <PonysonaAttributeHeader
-                                toggled={attributesVisibility["horn"]}
-                                onToggle={() => toggleAttributeStylizer("horn")}
+                                toggled={attributes.horn !== null && attributes.horn !== undefined}
                             >Horn</PonysonaAttributeHeader>
-                            {attributesVisibility["horn"] && <CharacterAttributeStyle
+                            {attributes.horn && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("horn", payload)}
                                 bodyPart="horn"
-                                defaultValue={attributes.horn}
+                                defaultValue={attributes.horn || undefined}
                             />}
                         </div>
                         <div>
                             <PonysonaAttributeHeader
-                                toggled={attributesVisibility["eyes"]}
-                                onToggle={() => toggleAttributeStylizer("eyes")}
+                                toggled={attributes.eyes !== null && attributes.eyes !== undefined}
                             >Eyes</PonysonaAttributeHeader>
-                            {attributesVisibility["eyes"] && <CharacterAttributeStyle
+                            {attributes.eyes && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("eyes", payload)}
                                 bodyPart="eyes"
-                                defaultValue={attributes.eyes}
+                                defaultValue={attributes.eyes || undefined}
                             />}
                         </div>
                     </div>

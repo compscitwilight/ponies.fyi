@@ -6,7 +6,7 @@ import { createClient } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import { PonysonaBody as UpdatePonysonaBody, HexColorRegex } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { MediaStatus, MediaType } from "@/generated/enums";
+import { BodyPart, MediaStatus, MediaType } from "@/generated/enums";
 
 export async function PUT(
     request: Request,
@@ -22,7 +22,7 @@ export async function PUT(
         { message: StatusMessages.NOT_AUTHENTICATED },
         { status: 401 }
     );
-    
+
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
@@ -47,6 +47,12 @@ export async function PUT(
                     { status: 404 }
                 );
 
+            if (ponysona.locked)
+                return NextResponse.json(
+                    { message: "This ponysona is currently locked and cannot be modified." },
+                    { status: 403 }
+                );
+
             const attributes = await tx.ponysonaAppearanceAttribute.findMany({
                 where: { ponysonaId: ponysona.id }
             });
@@ -66,74 +72,80 @@ export async function PUT(
 
             // update attributes //
             if (validatedBody.attributes) {
-                for (const attribute of Object.values(validatedBody.attributes)) {
-                    if (!attribute || !attribute.part || !attribute.pattern) continue;
-                    for (const color of attribute.colors)
-                        if (!HexColorRegex.exec(color))
-                            return NextResponse.json(
-                                { message: `Invalid hex code ${color} provided` },
-                                { status: 400 }
-                            );
-
+                for (const [key, attribute] of Object.entries(validatedBody.attributes)) {
+                    if (attribute === undefined) continue;
                     const existingAttribute = await tx.ponysonaAppearanceAttribute.findFirst({
                         where: {
                             ponysonaId: ponysona.id,
-                            bodyPart: attribute.part,
+                            bodyPart: key as BodyPart,
                         }
                     });
 
-                    if (existingAttribute)
-                        await tx.ponysonaAppearanceAttribute.update({
-                            where: { id: existingAttribute.id },
-                            data: {
-                                colors: attribute.colors,
-                                pattern: attribute.pattern
-                            }
-                        });
-                    else
-                        await tx.ponysonaAppearanceAttribute.create({
-                            data: {
-                                ponysonaId: ponysona.id,
-                                bodyPart: attribute.part,
-                                colors: attribute.colors,
-                                pattern: attribute.pattern
-                            }
-                        });
+                    if (attribute === null) {
+                        if (existingAttribute)
+                            await tx.ponysonaAppearanceAttribute.delete({
+                                where: { id: existingAttribute.id }
+                            });
+                    } else {
+                        for (const color of attribute.colors)
+                            if (!HexColorRegex.exec(color))
+                                return NextResponse.json(
+                                    { message: `Invalid hex code ${color} provided` },
+                                    { status: 400 }
+                                );
+
+                        if (existingAttribute)
+                            await tx.ponysonaAppearanceAttribute.update({
+                                where: { id: existingAttribute.id },
+                                data: {
+                                    colors: attribute.colors,
+                                    pattern: attribute.pattern
+                                }
+                            });
+                        else
+                            await tx.ponysonaAppearanceAttribute.create({
+                                data: {
+                                    ponysonaId: ponysona.id,
+                                    bodyPart: attribute.part,
+                                    colors: attribute.colors,
+                                    pattern: attribute.pattern
+                                }
+                            });
+                    }
                 }
             }
 
             // update media //
-            const previewObject = await tx.media.findFirst({
-                where: { ponysonaId: ponysona.id, type: MediaType.preview }
-            });
+            if (validatedBody.media) {
+                for (const [key, uuid] of Object.entries(validatedBody.media)) {
+                    if (uuid === undefined) continue;
 
-            if (
-                validatedBody.media &&
-                validatedBody.media.preview &&
-                (previewObject === null || validatedBody.media.preview !== previewObject.id)) {
-                await tx.media.update({
-                    where: { id: validatedBody.media.preview, ponysonaId: ponysona.id },
-                    data: {
-                        ponysonaId: ponysona.id,
-                        status: MediaStatus.uploaded
+                    const existingMediaObject = await tx.media.findFirst({
+                        where: {
+                            id: ponysona.id,
+                            type: key as MediaType
+                        }
+                    });
+
+                    if (existingMediaObject !== null && uuid === null) {
+                        // if (uuid === null) {
+                        await tx.media.update({
+                            where: { id: existingMediaObject.id },
+                            data: { ponysonaId: null, status: MediaStatus.finalized }
+                        });
+                        // } else {
+                        //     await tx.media.update({
+                        //         where: { id: existingMediaObject.id },
+                        //         data: { ponysonaId: ponysona.id, status: MediaStatus.uploaded }
+                        //     })
+                        // }
+                    } else {
+                        await tx.media.update({
+                            where: { id: uuid as string },
+                            data: { ponysonaId: ponysona.id, status: MediaStatus.uploaded }
+                        })
                     }
-                });
-            }
-
-            const markObject = await tx.media.findFirst({
-                where: { ponysonaId: ponysona.id, type: MediaType.mark }
-            });
-
-            if (validatedBody.media &&
-                validatedBody.media.mark &&
-                (markObject === null || validatedBody.media.mark !== markObject.id)) {
-                await tx.media.update({
-                    where: { id: validatedBody.media.mark, ponysonaId: null },
-                    data: {
-                        ponysonaId: ponysona.id,
-                        status: MediaStatus.uploaded
-                    }
-                })
+                }
             }
 
             // revision logging for reversal //
@@ -150,8 +162,8 @@ export async function PUT(
                         creators: ponysona.creators,
                         attributes,
                         media: {
-                            ...(previewObject !== null && { preview: previewObject.id }),
-                            ...(markObject !== null && { mark: markObject.id })
+                            ...(validatedBody.media?.preview !== null && { preview: validatedBody.media?.preview }),
+                            ...(validatedBody.media?.mark !== null && { mark: validatedBody.media?.mark })
                         }
                     }
                 }

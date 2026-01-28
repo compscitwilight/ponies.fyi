@@ -1,17 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Media, Ponysona } from "@/generated/client";
-import { supabase } from "@/lib/auth";
 import { MediaUpload } from "./MediaUpload";
 import Link from "next/link";
 
-export function PonysonaGallery({ ponysona, gallery }: {
+export function PonysonaGallery({ ponysona, gallery, mediaUploads }: {
     ponysona: Ponysona,
-    gallery: Array<Media>
+    gallery: Array<Media>,
+    mediaUploads?: boolean
 }) {
-    const [session, setSession] = useState<any>();
-
     function onImageUploadComplete(uuid: string) {
         fetch(`/api/ponysonas/${ponysona.id}/gallery`, {
             method: "PATCH",
@@ -24,17 +21,11 @@ export function PonysonaGallery({ ponysona, gallery }: {
             })
     }
 
-    useEffect(() => {
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            setSession(session);
-        });
-    }, [])
-
     return (
         <div id="gallery">
             <h1 className="text-3xl font-bold">Gallery</h1>
             <hr className="h-px my-2 border-0 bg-gray-400/50" />
-            {session && <MediaUpload onUploadComplete={onImageUploadComplete} type="gallery" />}
+            {mediaUploads && <MediaUpload onUploadComplete={onImageUploadComplete} type="gallery" />}
             {
                 gallery.length === 0 ?
                     <p>There are no images in {ponysona.primaryName}'s gallery.</p> :
