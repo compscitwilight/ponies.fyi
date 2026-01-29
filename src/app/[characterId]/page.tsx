@@ -2,6 +2,7 @@ import { Metadata, ResolvingMetadata, Viewport } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import moment from "moment";
+import tinycolor from "tinycolor2";
 
 import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
 import prisma from "lib/prisma";
@@ -26,7 +27,14 @@ function AttributeField({
                 <p>{pattern}</p>
                 {
                     colors.map((color: string) =>
-                        <div key={color} className="text-xs font-bold p-2 border border-gray-500" style={{ backgroundColor: color }}>
+                        <div
+                            key={color}
+                            className="text-xs font-bold p-2 border border-gray-500"
+                            style={{
+                                backgroundColor: color,
+                                color: tinycolor(color).isDark() ? "#929292" : "#000"
+                            }}
+                        >
                             {color}
                         </div>
                     )
@@ -107,7 +115,8 @@ export default async function CharacterPage({ params }: {
     const galleryObjects = await getPonysonaGallery(ponysona);
 
     const attributes = await prisma.ponysonaAppearanceAttribute.findMany({
-        where: { ponysonaId: ponysona.id }
+        where: { ponysonaId: ponysona.id },
+        orderBy: { bodyPart: "desc" }
     });
 
     const derivatives = await prisma.ponysona.findMany({
@@ -139,7 +148,7 @@ export default async function CharacterPage({ params }: {
                             {/* {(user !== null && profile?.isAdmin) && <form action={test}>
                             <button type="submit" className="text-yellow-600 underline cursor-pointer">Lock</button>
                         </form>} */}
-                            {(profile?.isAdmin) && <>
+                            {(profile && profile.isAdmin) && <>
                                 <PonysonaLockToggle ponysona={ponysona} />
                                 <PonysonaStatusDropdown ponysona={ponysona} />
                             </>}
@@ -182,6 +191,10 @@ export default async function CharacterPage({ params }: {
                     <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
                     <MetadataField name="Sources" value={ponysona.sources.length > 0 ? ponysona.sources.join(", ") : "not provided"} />
                     <MetadataField name="Status" value={ponysona.status} />
+                    {
+                        ponysona.submittedById &&
+                            <MetadataField name="Added by" value={`User ${ponysona.submittedById}`} />
+                    }
                     <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
                     <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
 
@@ -213,7 +226,7 @@ export default async function CharacterPage({ params }: {
                 <PonysonaGallery
                     ponysona={ponysona}
                     gallery={galleryObjects}
-                    mediaUploads={profile === null || profile?.canUpload}
+                    mediaUploads={profile === null || profile.canUpload}
                 />
             </div>
 
@@ -228,7 +241,7 @@ export default async function CharacterPage({ params }: {
                 <div>
                     <label className="text-lg font-bold" htmlFor="character-mark">Cutie Mark</label>
                     {markImageRes ?
-                        <img id="character-mark" src={`/api/ponysona/${ponysona.id}/mark`} /> :
+                        <img id="character-mark" src={`/api/ponysonas/${ponysona.id}/mark`} /> :
                         <p>No cutie mark provided.</p>}
                 </div>
             </div>

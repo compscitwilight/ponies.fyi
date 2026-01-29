@@ -25,22 +25,18 @@ export function PonysonaGallery({ ponysona, gallery, mediaUploads }: {
         <div id="gallery">
             <h1 className="text-3xl font-bold">Gallery</h1>
             <hr className="h-px my-2 border-0 bg-gray-400/50" />
-            {
-                gallery.length === 0 ?
-                    <p>There are no images in {ponysona.primaryName}'s gallery.</p> :
-                    <div className="grid lg:grid-cols-3">
-                        {mediaUploads && <MediaUpload onUploadComplete={onImageUploadComplete} type="gallery" />}
-                        {
-                            gallery.map((object: Media) =>
-                                <Link key={object.id} href={`/media/${object.id}`}>
-                                    <img
-                                        src={`https://static.ponies.fyi/${object.id}`}
-                                    />
-                                </Link>
-                            )
-                        }
-                    </div>
-            }
+            <div className="grid lg:grid-cols-3">
+                {mediaUploads && <MediaUpload onUploadComplete={onImageUploadComplete} type="gallery" />}
+                {
+                    gallery.length > 0 && gallery.map((object: Media) =>
+                        <Link key={object.id} href={`/media/${object.id}`}>
+                            <img
+                                src={`https://static.ponies.fyi/${object.id}`}
+                            />
+                        </Link>
+                    )
+                }
+            </div>
         </div>
     )
 }

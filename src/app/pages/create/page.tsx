@@ -478,7 +478,19 @@ export default function CreatePage({
                     <div className="grid gap-2 items-center">
                         <div>
                             <PonysonaAttributeHeader
+                                toggled={attributes.mane !== null && attributes.mane !== undefined}
+                                onToggle={() => assignAttribute("mane", {} as any)}
+                            >Mane</PonysonaAttributeHeader>
+                            {attributes.mane && <CharacterAttributeStyle
+                                onChange={(payload: PonysonaAttributePayload) => assignAttribute("mane", payload)}
+                                bodyPart="mane"
+                                defaultValue={attributes.mane || undefined}
+                            />}
+                        </div>
+                        <div>
+                            <PonysonaAttributeHeader
                                 toggled={attributes.tail !== null && attributes.tail !== undefined}
+                                onToggle={() => assignAttribute("tail", {} as any)}
                             >Tail</PonysonaAttributeHeader>
                             {attributes.tail && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("tail", payload)}
@@ -489,6 +501,7 @@ export default function CreatePage({
                         <div>
                             <PonysonaAttributeHeader
                                 toggled={attributes.coat !== null && attributes.coat !== undefined}
+                                onToggle={() => assignAttribute("coat", {} as any)}
                             >Coat</PonysonaAttributeHeader>
                             {attributes.coat && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("coat", payload)}
@@ -499,6 +512,7 @@ export default function CreatePage({
                         <div>
                             <PonysonaAttributeHeader
                                 toggled={attributes.wings !== null && attributes.wings !== undefined}
+                                onToggle={() => assignAttribute("wings", {} as any)}
                             >Wings</PonysonaAttributeHeader>
                             {attributes.wings && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("wings", payload)}
@@ -509,6 +523,7 @@ export default function CreatePage({
                         <div>
                             <PonysonaAttributeHeader
                                 toggled={attributes.horn !== null && attributes.horn !== undefined}
+                                onToggle={() => assignAttribute("horn", {} as any)}
                             >Horn</PonysonaAttributeHeader>
                             {attributes.horn && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("horn", payload)}
@@ -519,6 +534,7 @@ export default function CreatePage({
                         <div>
                             <PonysonaAttributeHeader
                                 toggled={attributes.eyes !== null && attributes.eyes !== undefined}
+                                onToggle={() => assignAttribute("eyes", {} as any)}
                             >Eyes</PonysonaAttributeHeader>
                             {attributes.eyes && <CharacterAttributeStyle
                                 onChange={(payload: PonysonaAttributePayload) => assignAttribute("eyes", payload)}
