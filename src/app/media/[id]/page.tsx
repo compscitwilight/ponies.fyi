@@ -40,6 +40,7 @@ export default async function MediaPage({
             <div>
                 <h2 className="text-2xl font-bold">Metadata</h2>
                 <div>
+                    <MetadataField name="Description" value={mediaObject.description || "No description provided."} />
                     <MetadataField name="Size" value={mediaObject.size} />
                     <MetadataField name="Status" value={mediaObject.status} />
                     <MetadataField name="Media type" value={mediaObject.type} />

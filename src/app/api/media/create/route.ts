@@ -6,6 +6,7 @@ import { MediaType } from "@/generated/enums";
 import prisma from "lib/prisma";
 import { StatusMessages } from "lib/errors";
 import { generatePresignedUploadURL } from "lib/aws";
+import { createClient, getUserProfile } from "lib/supabase";
 
 const MediaCreateBody = object({
     type: mixed<MediaType>().oneOf(Object.values(MediaType)).required(),
@@ -13,6 +14,17 @@ const MediaCreateBody = object({
 });
 
 export async function POST(request: Request) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+        const profile = await getUserProfile(user);
+        if (profile && !profile.canUpload)
+            return NextResponse.json(
+                { message: "You are not allowed to upload media objects." },
+                { status: 403 }
+            );
+    }
+
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json({ message: StatusMessages.INVALID_CONTENT_TYPE }, { status: 400 });

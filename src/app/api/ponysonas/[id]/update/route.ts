@@ -152,6 +152,7 @@ export async function PUT(
             await tx.ponysonaRevision.create({
                 data: {
                     ponysonaId: ponysona.id,
+                    createdById: user.id,
                     diff: 0,
                     snapshot: {
                         primaryName: ponysona.primaryName,

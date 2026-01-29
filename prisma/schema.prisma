@@ -14,12 +14,13 @@ enum PonysonaStatus {
 }
 
 model Profile {
-    userId                 String   @id
-    isAdmin                Boolean  @default(false)
-    canUpload              Boolean  @default(true) // only applies to gallery images
-    canRemoveGalleryImages Boolean  @default(true)
-    createdAt              DateTime @default(now())
-    updatedAt              DateTime @updatedAt
+    userId                 String     @id
+    isAdmin                Boolean    @default(false)
+    canUpload              Boolean    @default(true) // only applies to gallery images
+    canRemoveGalleryImages Boolean    @default(true)
+    submittedPonysonas     Ponysona[]
+    createdAt              DateTime   @default(now())
+    updatedAt              DateTime   @updatedAt
 }
 
 model Ponysona {
@@ -39,6 +40,9 @@ model Ponysona {
     revisions   PonysonaRevision[]
     attributes  PonysonaAppearanceAttribute[]
     derivatives Ponysona[]                    @relation("derivatives")
+
+    submittedById String?
+    submittedBy   Profile? @relation(fields: [submittedById], references: [userId])
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -60,13 +64,14 @@ enum MediaStatus {
 }
 
 model Media {
-    id         String      @id @default(uuid())
-    ponysonaId String?
-    type       MediaType   @default(gallery)
-    status     MediaStatus @default(pending)
-    size       String?
-    createdAt  DateTime    @default(now())
-    updatedAt  DateTime    @updatedAt
+    id          String      @id @default(uuid())
+    ponysonaId  String?
+    type        MediaType   @default(gallery)
+    status      MediaStatus @default(pending)
+    size        String?
+    description String?
+    createdAt   DateTime    @default(now())
+    updatedAt   DateTime    @updatedAt
 
     ponysona Ponysona? @relation(fields: [ponysonaId], references: [id])
 }
@@ -107,6 +112,8 @@ model PonysonaRevision {
 
     diff     Int
     snapshot Json
+
+    createdById String?
 
     createdAt DateTime @default(now())
     ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])

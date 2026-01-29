@@ -3,7 +3,7 @@ import { ValidationError, array, object, string } from "yup";
 import { MediaStatus, MediaType } from "@/generated/enums";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import prisma from "lib/prisma";
-import { createClient } from "lib/supabase";
+import { createClient, getUserProfile } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import { Media } from "@/generated/client";
 
@@ -43,6 +43,13 @@ export async function PATCH(
     }
 
     const validatedBody = await PatchGalleryBody.validate(body);
+    const profile = await getUserProfile(user);
+    if (profile !== null && !profile.canRemoveGalleryImages && validatedBody.remove.length > 0)
+        return NextResponse.json(
+            { message: "You are not allowed to remove gallery images" },
+            { status: 403 }
+        );
+
     try {
         return await prisma.$transaction(async (tx: TransactionClient) => {
             const existingGalleryObjects = await tx.media.findMany({

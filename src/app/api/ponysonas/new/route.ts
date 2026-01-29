@@ -2,14 +2,19 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { ValidationError } from "yup";
 
+import { TransactionClient } from "@/generated/internal/prismaNamespace";
+import { MediaStatus } from "@/generated/enums";
+
 import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
-import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { MediaStatus } from "@/generated/enums";
 import { PonysonaBody as NewPonysonaBody, HexColorRegex } from "lib/ponysonas";
+import { createClient } from "lib/supabase";
 
 export async function POST(request: Request) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
@@ -39,6 +44,7 @@ export async function POST(request: Request) {
                     tagIds: (validatedBody.tagIds && validatedBody.tagIds.length > 0) ? validatedBody.tagIds : [],
                     sources: (validatedBody.sources && validatedBody.sources.length > 0) ? validatedBody.sources : [],
                     creators: (validatedBody.creators && validatedBody.creators.length > 0) ? validatedBody.creators : [],
+                    ...(user && { submittedById: user.id }),
                     colorsName: []
                 }
             });

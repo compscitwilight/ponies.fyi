@@ -80,7 +80,7 @@ export function MediaUpload({
 
                     xhr.onload = () => {
                         setFinalizing(true);
-                        fetch(`/api/media/finalize/${json.uuid}`, { method: "PUT" })
+                        fetch(`/api/media/${json.uuid}/finalize`, { method: "PUT" })
                             .then((response) => {
                                 setFinalizing(false);
                                 if (response.status === 200) {
