@@ -1,5 +1,5 @@
 <h1 align="center">ponies.fyi</h1>
-Source code for [ponies.fyi](https://ponies.fyi), a community-maintained reference index for ponysonas and other fan-created characters.
+Source code for <a href="https://ponies.fyi">ponies.fyi</a>, a community-maintained reference index for ponysonas and other fan-created characters.
 
 ## Contributing
 ponies.fyi is licensed under the MIT license. Anyone may contribute, fork, or redistribute this repository. If you're interested in contributing to the project, you may do so in the following ways:
