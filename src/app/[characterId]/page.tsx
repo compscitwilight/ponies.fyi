@@ -120,7 +120,10 @@ export default async function CharacterPage({ params }: {
     });
 
     const derivatives = await prisma.ponysona.findMany({
-        where: { originalId: ponysona.id },
+        where: {
+            originalId: ponysona.id,
+            
+        }
     }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
 
     for (const derivative of derivatives)

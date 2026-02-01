@@ -34,6 +34,10 @@ export default async function RootLayout({
   const { data: { user } } = await supabase.auth.getUser();
   const profile = user ? await prisma.profile.findUnique({ where: { userId: user.id } }) : null;
 
+  const versionResponse = await fetch("https://api.github.com/repos/compscitwilight/ponies.fyi/commits?per_page=1");
+  const commits = await versionResponse.json();
+  const { sha } = commits[0] || { sha: "" };
+
   return (
     <html lang="en">
       <body
@@ -66,7 +70,7 @@ export default async function RootLayout({
                 className="flex items-center gap-1 cursor-pointer transition-text duration-200 hover:text-blue-500"
               >
                 <Github />
-                <p>version b1.0</p>
+                <p>{sha.slice(0, 6)}</p>
               </a>
             </div>
           </div>
