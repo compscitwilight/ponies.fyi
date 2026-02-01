@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { ValidationError, array, object, string } from "yup";
+
 import { MediaStatus, MediaType } from "@/generated/enums";
+import { Media } from "@/generated/client";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
+
 import prisma from "lib/prisma";
 import { createClient, getUserProfile } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
-import { Media } from "@/generated/client";
 
 const PatchGalleryBody = object({
     add: array(string().required()).default(new Array<string>()),
@@ -52,6 +54,19 @@ export async function PATCH(
 
     try {
         return await prisma.$transaction(async (tx: TransactionClient) => {
+            const ponysona = await tx.ponysona.findUnique({ where: { id } });
+            if (ponysona === null)
+                return NextResponse.json(
+                    { message: StatusMessages.PONYSONA_NOT_FOUND },
+                    { status: 404 }
+                );
+
+            if (ponysona.locked)
+                return NextResponse.json(
+                    { message: StatusMessages.PONYSONA_LOCKED },
+                    { status: 403 }
+                );
+
             const existingGalleryObjects = await tx.media.findMany({
                 where: {
                     ponysonaId: id,

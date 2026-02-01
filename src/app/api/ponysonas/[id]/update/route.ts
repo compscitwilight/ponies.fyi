@@ -49,7 +49,7 @@ export async function PUT(
 
             if (ponysona.locked)
                 return NextResponse.json(
-                    { message: "This ponysona is currently locked and cannot be modified." },
+                    { message: StatusMessages.PONYSONA_LOCKED },
                     { status: 403 }
                 );
 
