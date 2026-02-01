@@ -14,6 +14,7 @@ import { CharacterAttributeStyle } from "@/components/CharacterAttributeStyle";
 import { NamePill } from "@/components/pills/Name";
 import { SourcePill } from "@/components/pills/Source";
 import { CreatorPill } from "@/components/pills/Creator";
+import Link from "next/link";
 
 const RequiredAsterisk = () => <Asterisk size={18} className="text-red-400" />;
 
@@ -78,6 +79,7 @@ export default function CreatePage({
         ev.preventDefault();
         const reqPayload = {
             primaryName,
+            derivativeOf,
             otherNames,
             description,
             tagIds,
@@ -546,6 +548,11 @@ export default function CreatePage({
                 </div>
 
                 <hr className="h-px my-2 border-0 bg-gray-400" />
+                {derivativeOf && <div className="flex gap-1 items-center text-lg">
+                    <b>Disclaimer:</b>
+                    <p>You're creating a derivative ponysona based on the entry linked </p>
+                    <Link className="text-sky-600 underline" href={`/${derivativeOf}`} target="_blank">here</Link>
+                </div>}
                 <button onMouseDown={onFormSubmit} type="button" className="p-2 rounded-md bg-emerald-400 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
                     {!editing ? "Create" : "Submit Changes"}
                 </button>

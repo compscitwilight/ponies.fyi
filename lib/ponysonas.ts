@@ -14,6 +14,7 @@ export const HexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 export const PonysonaBody = object({
     primaryName: string().required(),
     otherNames: array(string().required()).optional().default(new Array<string>()),
+    derivativeOf: string().optional(),
     description: string().nullable().optional(),
     tagIds: array(number().required()).required(),
     sources: array(string().required()).optional().default(new Array<string>()),

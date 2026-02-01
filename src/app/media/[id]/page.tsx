@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
-import prisma from "lib/prisma";
-import { MetadataField } from "@/components/ponysonas/MetadataField";
 import moment from "moment";
+import prisma from "lib/prisma";
+import { createClient, getUserProfile } from "lib/supabase";
+
+import { MediaRemove } from "@/components/moderation/MediaRemove";
+import { MetadataField } from "@/components/ponysonas/MetadataField";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -26,6 +29,10 @@ export default async function MediaPage({
         id: string
     }>
 }) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    const profile = user ? await getUserProfile(user) : null;
+
     const { id } = await params;
     const mediaObject = await prisma.media.findUnique({ where: { id } });
     if (mediaObject === null)
@@ -38,8 +45,8 @@ export default async function MediaPage({
             <img src={`https://static.ponies.fyi/${id}`} alt={id} />
             <hr className="h-px my-2 border-0 bg-gray-400/50" />
             <div>
-                <h2 className="text-2xl font-bold">Metadata</h2>
                 <div>
+                    <h2 className="text-2xl font-bold">Metadata</h2>
                     <MetadataField name="Description" value={mediaObject.description || "No description provided."} />
                     <MetadataField name="Size" value={mediaObject.size} />
                     <MetadataField name="Status" value={mediaObject.status} />
@@ -53,6 +60,10 @@ export default async function MediaPage({
                         value={`${mediaObject.updatedAt.toLocaleDateString()} ${mediaObject.updatedAt.toLocaleTimeString()} (${moment(mediaObject.updatedAt).fromNow()})`}
                     />
                 </div>
+                {(profile && profile.isAdmin) && <div className="mt-2">
+                    <h2 className="text-2xl font-bold">Actions</h2>
+                    <MediaRemove media={mediaObject} />
+                </div>}
             </div>
         </div>
     )

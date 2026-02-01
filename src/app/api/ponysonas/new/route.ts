@@ -35,10 +35,23 @@ export async function POST(request: Request) {
     try {
         const slug = await generatePonysonaSlug(validatedBody.primaryName);
         return await prisma.$transaction(async (tx: TransactionClient) => {
+            if (validatedBody.derivativeOf) {
+                const originalPonysona = await tx.ponysona.findUnique({
+                    where: { id: validatedBody.derivativeOf }
+                });
+
+                if (originalPonysona === null)
+                    return NextResponse.json(
+                        { message: `${StatusMessages.PONYSONA_NOT_FOUND} (derivative)` },
+                        { status: 404 }
+                    );
+            }
+
             const newPonysona = await tx.ponysona.create({
                 data: {
                     slug,
                     primaryName: validatedBody.primaryName,
+                    originalId: validatedBody.derivativeOf,
                     ...(validatedBody.otherNames && { otherNames: validatedBody.otherNames }),
                     description: validatedBody.description,
                     tagIds: (validatedBody.tagIds && validatedBody.tagIds.length > 0) ? validatedBody.tagIds : [],
