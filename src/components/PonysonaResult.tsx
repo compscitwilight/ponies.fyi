@@ -19,7 +19,7 @@ export function PonysonaResult({ ponysona }: {
                 {colors.length > 0 && <div className="flex justify-center mt-2">
                     {
                         colors.map((color: string) =>
-                            <span title={color} className="w-8 h-4" style={{ backgroundColor: color }}></span>
+                            <span key={color} title={color} className="w-8 h-4" style={{ backgroundColor: color }}></span>
                         )
                     }
                 </div>}
