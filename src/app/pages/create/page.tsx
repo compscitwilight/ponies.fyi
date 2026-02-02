@@ -73,6 +73,8 @@ export default function CreatePage({
     const [sourceVal, setSourceVal] = useState<string>("");
     const [creatorVal, setCreatorVal] = useState<string>("");
     const [availableTags, setAvailableTags] = useState<Array<PonysonaTag>>(new Array<PonysonaTag>());
+    
+    const [pending, setPending] = useState<boolean>(false);
     const [submitError, setSubmitError] = useState<string>();
 
     function onFormSubmit(ev: FormEvent) {
@@ -90,39 +92,38 @@ export default function CreatePage({
         };
         console.log(reqPayload);
 
-        if (!editing) {
-            fetch("/api/ponysonas/new", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify(reqPayload)
+        setPending(true);
+
+        const url = editing ? `/api/ponysonas/${editing}/update` : "/api/ponysonas/new";
+        const method = editing ? "PUT" : "POST";
+
+        fetch(url, {
+            method,
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(reqPayload)
+        })
+            .then(async (response) => {
+                if (!response.ok) {
+                    const errorJson = await response.json();
+                    return Promise.reject(errorJson);
+                }
+
+                if (!editing) return response.json();
+                return { success: true };
             })
-                .then((response) => response.json())
-                .then((json: any) => {
-                    if (json.message) setSubmitError(json.message);
-                    else {
-                        const result = json as Ponysona;
-                        window.location.assign(`/${result.slug}`)
-                        // router.push(`/${result.slug}`);
-                    }
-                })
-        } else {
-            fetch(`/api/ponysonas/${editing}/update`, {
-                method: "PUT",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify(reqPayload)
+            .then((result) => {
+                setPending(false);
+                if (!editing) {
+                    const pony = result as Ponysona;
+                    window.location.assign(`/${pony.slug}`);
+                } else {
+                    window.location.assign(`/${existingSlug}`);
+                }
             })
-                .then((response) => {
-                    if (response.status !== 200) return response.json();
-                    else window.location.assign(`/${existingSlug}`);
-                })
-                .then((json: any) => {
-                    if (json && json.message) setSubmitError(json.message);
-                })
-        }
+            .catch((error) => {
+                setPending(false);
+                if (error.message) setSubmitError(error.message);
+            })
     }
 
     function addOtherName() {
@@ -554,8 +555,14 @@ export default function CreatePage({
                     <p>You're creating a derivative ponysona based on the entry linked </p>
                     <Link className="text-sky-600 underline" href={`/${derivativeOf}`} target="_blank">here</Link>
                 </div>}
-                <button onMouseDown={onFormSubmit} type="button" className="p-2 rounded-md bg-emerald-400 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50">
-                    {!editing ? "Create" : "Submit Changes"}
+                {submitError && <p className="text-lg font-bold text-red-500">{submitError}</p>}
+                <button
+                    disabled={pending}
+                    onMouseDown={onFormSubmit}
+                    type="button"
+                    className="p-2 rounded-md bg-emerald-400 border border-emerald-400 font-bold cursor-pointer transition duration-200 hover:bg-emerald-500/50"
+                >
+                    {pending ? "Pending..." : !editing ? "Create" : "Submit Changes"}
                 </button>
             </div>
         </div>

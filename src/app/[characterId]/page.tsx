@@ -83,11 +83,9 @@ export async function generateViewport({ params }: {
 }): Promise<Viewport> {
     const { characterId } = await params;
     const firstAttribute = await prisma.ponysonaAppearanceAttribute.findFirst({
-        where: { ponysonaId: characterId },
-        take: 1,
+        where: { ponysona: { slug: characterId } },
         orderBy: { bodyPart: "asc" }
     });
-
     return {
         themeColor: (firstAttribute && firstAttribute.colors.length > 0) ? firstAttribute.colors[0] : "#3bb47eff"
     };
