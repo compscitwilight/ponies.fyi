@@ -1,4 +1,4 @@
-<img align="center" src="./github/preview.png" />
+<p align="center"><img width="512px" src="./github/preview.png" /></p>
 <h1 align="center">ponies.fyi</h1>
 Source code for <a href="https://ponies.fyi">ponies.fyi</a>, a community-maintained reference index for ponysonas and other fan-created characters.
 
