@@ -105,7 +105,7 @@ export default async function CharacterPage({ params }: {
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
         where: { slug: characterId },
-        include: { tags: true }
+        include: { attributes: true, tags: true }
     });
 
     if (ponysona === null)
@@ -115,15 +115,10 @@ export default async function CharacterPage({ params }: {
     const markImageRes = await getPonysonaMark(ponysona);
     const galleryObjects = await getPonysonaGallery(ponysona);
 
-    const attributes = await prisma.ponysonaAppearanceAttribute.findMany({
-        where: { ponysonaId: ponysona.id },
-        orderBy: { bodyPart: "desc" }
-    });
-
     const derivatives = await prisma.ponysona.findMany({
         where: { originalId: ponysona.id },
-        include: { tags: true }
-    }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
+        include: { attributes: true, tags: true }
+    });
 
     return (
         <div className="flex flex-col w-9/10 m-auto lg:flex-row lg:w-full gap-2">
@@ -157,11 +152,11 @@ export default async function CharacterPage({ params }: {
                     </div>
 
                     {/* Attributes */}
-                    {attributes.length > 0 && <>
+                    {ponysona.attributes.length > 0 && <>
                         <h2 className="mt-4 text-lg font-bold">Attributes</h2>
                         <hr className="h-px my-2 border-0 bg-gray-400/50" />
                         <div>
-                            {attributes.map((attribute: PonysonaAppearanceAttribute) =>
+                            {ponysona.attributes.map((attribute: PonysonaAppearanceAttribute) =>
                                 <AttributeField key={attribute.id} name={attribute.bodyPart} colors={attribute.colors} pattern={attribute.pattern} />
                             )}
                         </div>
@@ -195,7 +190,7 @@ export default async function CharacterPage({ params }: {
                         derivatives.length > 0 ? (
                             <div>
                                 {
-                                    derivatives.map((derivative: Ponysona & { tags: Array<PonysonaTag> }) =>
+                                    derivatives.map((derivative: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }) =>
                                         <PonysonaResult key={derivative.id} ponysona={derivative} />
                                     )
                                 }

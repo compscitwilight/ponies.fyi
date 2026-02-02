@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { Ponysona, PonysonaTag } from "@/generated/client";
+import { Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { Tag } from "./Tag";
 
 export function PonysonaResult({ ponysona }: {
-    ponysona: Ponysona & { tags: Array<PonysonaTag> }
+    ponysona: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }
 }) {
+    const colors = [...new Set(
+        ponysona.attributes.map((att: PonysonaAppearanceAttribute) => att.colors).flat()
+    )];
+
     return (
         <div className="border border-gray-400/50 rounded-md p-2">
             <div className="overflow-hidden">
@@ -12,6 +16,13 @@ export function PonysonaResult({ ponysona }: {
                     className="object-fit max-h-[256px] max-w-[256px] m-auto"
                     src={`/api/ponysonas/${ponysona.id}/preview`}
                 />
+                {colors.length > 0 && <div className="flex justify-center mt-2">
+                    {
+                        colors.map((color: string) =>
+                            <span title={color} className="w-8 h-4" style={{ backgroundColor: color }}></span>
+                        )
+                    }
+                </div>}
             </div>
             <b className="text-2xl">{ponysona.primaryName}</b>
             <div className="flex items-center gap-1">

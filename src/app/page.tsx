@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import prisma from "lib/prisma";
-import { Ponysona, PonysonaStatus, PonysonaTag } from "@/generated/client";
-import { PaginatedResults } from "@/components/PaginatedResults";
+import { ArrowLeft, ArrowRight } from "lucide-react";
+import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag } from "@/generated/client";
+import { PonysonaResult } from "@/components/PonysonaResult";
 
 function PageWarning({ children }: PropsWithChildren) {
   return (
@@ -41,7 +42,10 @@ export default async function HomePage({ searchParams }: {
     orderBy: {
       updatedAt: "desc"
     },
-    include: { tags: true },
+    include: {
+      attributes: true,
+      tags: true
+    },
     skip: (page - 1) * itemsPerPage,
     take: itemsPerPage
   });
@@ -52,6 +56,12 @@ export default async function HomePage({ searchParams }: {
   //   )) as Array<PonysonaTag>;
 
   const ponysonasCount = await prisma.ponysona.count();
+  const totalPages = Math.max(1, Math.ceil(ponysonasCount / itemsPerPage));
+
+  function goToPage(nextPage: number) {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", String(nextPage));
+  }
 
   return (
     <div>
@@ -82,12 +92,27 @@ export default async function HomePage({ searchParams }: {
 
       <h1 className="text-3xl font-bold">Home</h1>
       <hr className="h-px my-2 border-0 bg-gray-300" />
-      <PaginatedResults
-        items={ponysonas}
-        page={page}
-        pageSize={itemsPerPage}
-        totalCount={ponysonasCount}
-      />
+      <div>
+        {ponysonas.length > 0 && <div className="grid lg:grid-cols-3 gap-2">
+          {
+            ponysonas.map((item: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }, index: number) =>
+              <PonysonaResult key={index} ponysona={item} />
+            )
+          }
+        </div>}
+
+        {ponysonas.length === 0 && (
+          <div className="text-center text-gray-700">
+            <p>No results found.</p>
+          </div>
+        )}
+
+        {/* nav */}
+        <div className="flex items-center justify-center gap-2">
+          {page > 1 && <ArrowLeft onMouseDown={() => goToPage(page - 1)} />}
+          {page < totalPages && <ArrowRight onMouseDown={() => goToPage(page + 1)} />}
+        </div>
+      </div>
     </div>
   );
 }
