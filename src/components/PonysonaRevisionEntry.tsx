@@ -31,21 +31,44 @@ function syntaxHighlight(json: string) {
     );
 }
 
-export function PonysonaRevisionEntry({ revision }: {
-    revision: PonysonaRevision
+export function PonysonaRevisionEntry({ revision, allowRevert }: {
+    revision: PonysonaRevision,
+    allowRevert?: boolean
 }) {
     const [snapshotVisible, setSnapshotVisible] = useState<boolean>(false);
+    const [reverting, setReverting] = useState<boolean>(false);
+    const [revertError, setRevertError] = useState<string>();
+
+    function revertToRevision() {
+        setReverting(true);
+        fetch(`/api/ponysonas/${revision.ponysonaId}/revision/${revision.id}`, {
+            method: "PATCH"
+        })
+            .then((response) => {
+                setReverting(false);
+                if (response.status === 200) window.location.reload();
+                else return response.json();
+            })
+            .then((json?: { message: string }) => {
+                if (json) setRevertError(json.message);
+            })
+    }
+
     return (
         <div id={revision.id} className="p-2 border border-gray-400/50 rounded-md">
             <div
                 onMouseDown={() => setSnapshotVisible(v => !v)}
-                className="flex cursor-pointer border-b border-gray-400/50 pb-2"
+                className="flex items-center gap-4 cursor-pointer border-b border-gray-400/50 pb-2"
             >
                 <h1 className="flex-1 text-lg font-bold">{revision.id}</h1>
                 <div className="flex gap-1 items-center">
                     <b>Created</b>
                     <p>{revision.createdAt.toISOString()}</p>
                 </div>
+                {allowRevert && (reverting ? <p>Reverting...</p> : <p
+                    className="underline cursor-pointer"
+                    onMouseDown={revertToRevision}
+                >Revert to revision</p>)}
             </div>
             {(revision.snapshot && snapshotVisible) && <div>
                 <pre dangerouslySetInnerHTML={{

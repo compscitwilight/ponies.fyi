@@ -1,7 +1,10 @@
 import { randomBytes } from "node:crypto";
 import { object, string, array, number, mixed } from "yup";
 import prisma from "./prisma";
-import { MediaType, Ponysona, BodyPart, Pattern } from "@/generated/client";
+import { MediaType, Ponysona, BodyPart, Pattern, Prisma } from "@/generated/client";
+import { TransactionClient } from "@/generated/internal/prismaNamespace";
+import { User } from "@supabase/supabase-js";
+import { userAgent } from "next/server";
 
 const PonysonaAttributeBody = object({
     part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
@@ -32,6 +35,73 @@ export const PonysonaBody = object({
         mark: string().nullable().optional()
     }).optional()
 });
+
+export interface RevisionSnapshot {
+    primaryName?: string,
+    originalId?: string,
+    otherNames?: Array<string>,
+    description?: string,
+    tagIds?: Array<number>,
+    sources?: Array<string>,
+    creators?: Array<string>,
+    attributes: Array<{
+        id?: string,
+        colors?: Array<string>,
+        pattern: Pattern,
+        ponysonaId?: string,
+        bodyPart: BodyPart,
+        createdAt?: Date,
+        updatedAt?: Date
+    }>,
+    media: {
+        preview?: string,
+        mark?: string 
+    }
+}
+
+export async function createPonysonaRevision(
+    tx: TransactionClient,
+    ponysona: Ponysona,
+    creator?: User
+) {
+    const previewObject = await tx.media.findFirst({
+        where: { ponysonaId: ponysona.id, type: MediaType.preview }
+    });
+
+    const markObject = await tx.media.findFirst({
+        where: { ponysonaId: ponysona.id, type: MediaType.mark }
+    });
+
+    const attributes = await tx.ponysonaAppearanceAttribute.findMany({
+        where: { ponysonaId: ponysona.id }
+    });
+
+    const snapshot = {
+        primaryName: ponysona.primaryName,
+        originalId: ponysona.originalId,
+        otherNames: ponysona.otherNames,
+        description: ponysona.description,
+        tagIds: ponysona.tagIds,
+        sources: ponysona.sources,
+        creators: ponysona.creators,
+        attributes,
+        media: {
+            ...(previewObject && { preview: previewObject.id }),
+            ...(markObject && { mark: markObject.id })
+        }
+    } as RevisionSnapshot;
+
+    const revision = await tx.ponysonaRevision.create({
+        data: {
+            ponysonaId: ponysona.id,
+            createdById: creator?.id,
+            diff: 0,
+            snapshot: snapshot as any
+        }
+    })
+
+    return revision;
+}
 
 export async function generatePonysonaSlug(primaryName: string) {
     const normalizedName = primaryName

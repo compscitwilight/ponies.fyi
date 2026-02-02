@@ -4,7 +4,12 @@ import { ValidationError } from "yup";
 import prisma from "lib/prisma";
 import { createClient } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
-import { PonysonaBody as UpdatePonysonaBody, HexColorRegex } from "lib/ponysonas";
+import {
+    RevisionSnapshot,
+    PonysonaBody as UpdatePonysonaBody,
+    HexColorRegex,
+    createPonysonaRevision
+} from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { BodyPart, MediaStatus, MediaType } from "@/generated/enums";
 
@@ -52,10 +57,6 @@ export async function PUT(
                     { message: StatusMessages.PONYSONA_LOCKED },
                     { status: 403 }
                 );
-
-            const attributes = await tx.ponysonaAppearanceAttribute.findMany({
-                where: { ponysonaId: ponysona.id }
-            });
 
             // update ponysona metadata first //
             await tx.ponysona.update({
@@ -148,28 +149,7 @@ export async function PUT(
                 }
             }
 
-            // revision logging for reversal //
-            await tx.ponysonaRevision.create({
-                data: {
-                    ponysonaId: ponysona.id,
-                    createdById: user.id,
-                    diff: 0,
-                    snapshot: {
-                        primaryName: ponysona.primaryName,
-                        otherNames: ponysona.otherNames,
-                        description: ponysona.description,
-                        tagIds: ponysona.tagIds,
-                        sources: ponysona.sources,
-                        creators: ponysona.creators,
-                        attributes,
-                        media: {
-                            ...(validatedBody.media?.preview !== null && { preview: validatedBody.media?.preview }),
-                            ...(validatedBody.media?.mark !== null && { mark: validatedBody.media?.mark })
-                        }
-                    }
-                }
-            })
-
+            await createPonysonaRevision(tx, ponysona, user);
             return NextResponse.json(
                 { message: "Updated ponysona" },
                 { status: 200 }
