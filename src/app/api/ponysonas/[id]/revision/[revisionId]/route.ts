@@ -34,7 +34,10 @@ export async function PATCH(
 
     try {
         return await prisma.$transaction(async (tx: TransactionClient) => {
-            const ponysona = await tx.ponysona.findUnique({ where: { id: ponysonaId } });
+            const ponysona = await tx.ponysona.findUnique({
+                where: { id: ponysonaId },
+                include: { tags: true }
+            });
             if (ponysona === null) return NextResponse.json(
                 { message: StatusMessages.PONYSONA_NOT_FOUND },
                 { status: 404 }
@@ -58,7 +61,9 @@ export async function PATCH(
                     originalId: snapshot.originalId,
                     otherNames: snapshot.otherNames,
                     description: snapshot.description,
-                    tagIds: snapshot.tagIds,
+                    tags: {
+                        set: snapshot.tagIds?.map((id: number) => ({ id }))
+                    },
                     sources: snapshot.sources,
                     creators: snapshot.creators
                 }

@@ -45,7 +45,10 @@ export async function PUT(
     try {
         return await prisma.$transaction(async (tx: TransactionClient) => {
             // latest data //
-            const ponysona = await tx.ponysona.findUnique({ where: { id } });
+            const ponysona = await tx.ponysona.findUnique({
+                where: { id },
+                include: { tags: true }
+            });
             if (ponysona === null)
                 return NextResponse.json(
                     { message: StatusMessages.PONYSONA_NOT_FOUND },
@@ -65,7 +68,9 @@ export async function PUT(
                     primaryName: validatedBody.primaryName,
                     otherNames: validatedBody.otherNames,
                     description: validatedBody.description,
-                    tagIds: validatedBody.tagIds,
+                    tags: {
+                        set: validatedBody.tagIds.map((id: number) => ({ id }))
+                    },
                     sources: validatedBody.sources,
                     creators: validatedBody.creators
                 }

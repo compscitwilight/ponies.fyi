@@ -104,7 +104,8 @@ export default async function CharacterPage({ params }: {
 
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
-        where: { slug: characterId }
+        where: { slug: characterId },
+        include: { tags: true }
     });
 
     if (ponysona === null)
@@ -120,23 +121,9 @@ export default async function CharacterPage({ params }: {
     });
 
     const derivatives = await prisma.ponysona.findMany({
-        where: {
-            originalId: ponysona.id,
-            
-        }
+        where: { originalId: ponysona.id },
+        include: { tags: true }
     }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
-
-    for (const derivative of derivatives)
-        derivative.tags = await Promise.all(derivative.tagIds.map((tagId: number) =>
-            prisma.ponysonaTag.findUnique({ where: { id: tagId } })
-        )) as Array<PonysonaTag>;
-
-    const tags = new Array<PonysonaTag>();
-    for (const id of ponysona.tagIds) {
-        const tag = await prisma.ponysonaTag.findUnique({ where: { id } });
-        if (tag === null) continue;
-        tags.push(tag);
-    }
 
     return (
         <div className="flex flex-col w-9/10 m-auto lg:flex-row lg:w-full gap-2">
@@ -164,7 +151,7 @@ export default async function CharacterPage({ params }: {
 
                     {/* Tags */}
                     <div className="flex gap-1 items-center">
-                        {tags.map((tag: PonysonaTag) =>
+                        {ponysona.tags.map((tag: PonysonaTag) =>
                             <Tag key={tag.id} tag={tag} redirect />
                         )}
                     </div>

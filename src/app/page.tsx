@@ -32,20 +32,24 @@ export default async function HomePage({ searchParams }: {
         OR: [
           { primaryName: { contains: query, mode: "insensitive" } },
           { otherNames: { has: query } },
-          { description: { contains: query, mode: "default" } }
+          { description: { contains: query, mode: "default" } },
+          { tags: { some: { name: { contains: query, mode: "insensitive" } } } }
         ]
       }),
       status: PonysonaStatus.Approved
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: {
+      updatedAt: "desc"
+    },
+    include: { tags: true },
     skip: (page - 1) * itemsPerPage,
     take: itemsPerPage
-  }) as Array<Ponysona & { tags: Array<PonysonaTag> }>;
+  });
 
-  for (const ponysona of ponysonas)
-    ponysona.tags = await Promise.all(ponysona.tagIds.map((tagId: number) =>
-      prisma.ponysonaTag.findUnique({ where: { id: tagId } })
-    )) as Array<PonysonaTag>;
+  // for (const ponysona of ponysonas)
+  //   ponysona.tags = await Promise.all(ponysona.tagIds.map((tagId: number) =>
+  //     prisma.ponysonaTag.findUnique({ where: { id: tagId } })
+  //   )) as Array<PonysonaTag>;
 
   const ponysonasCount = await prisma.ponysona.count();
 

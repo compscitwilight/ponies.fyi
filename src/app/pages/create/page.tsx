@@ -197,7 +197,8 @@ export default function CreatePage({
                 })
                 .then((json: any) => {
                     const data = json as Ponysona & {
-                        attributes: Array<PonysonaAppearanceAttribute>
+                        attributes: Array<PonysonaAppearanceAttribute>,
+                        tags: Array<PonysonaTag>
                     };
 
                     setPrimaryName(data.primaryName);
@@ -206,7 +207,7 @@ export default function CreatePage({
                     if (data.otherNames.length > 0) setIncludeOtherNames(true);
 
                     if (data.description) setDescription(data.description);
-                    setTagIds(data.tagIds);
+                    setTagIds(data.tags.map((tag: PonysonaTag) => tag.id));
                     setSources(data.sources);
                     setCreators(data.creators);
                     if (data.attributes) {

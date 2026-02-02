@@ -10,7 +10,7 @@ export async function GET(request: Request, { params }: {
     const { id } = await params;
     const ponysona = await prisma.ponysona.findUnique({
         where: { id },
-        include: { attributes: true }
+        include: { tags: true, attributes: true }
     });
 
     if (ponysona === null)

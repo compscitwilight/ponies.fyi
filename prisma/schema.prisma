@@ -33,7 +33,7 @@ model Ponysona {
     status      PonysonaStatus @default(Pending)
     locked      Boolean        @default(false)
 
-    tagIds      Int[] /* reference PonysonaTag */
+    tags        PonysonaTag[]                 @relation("TagName")
     sources     String[]
     creators    String[]
     colorsName  String[]
@@ -129,7 +129,8 @@ enum TagType {
 }
 
 model PonysonaTag {
-    id   Int     @id @default(autoincrement())
-    name String  @unique
-    type TagType
+    id        Int        @id @default(autoincrement())
+    name      String     @unique
+    type      TagType
+    ponysonas Ponysona[] @relation("TagName")
 }

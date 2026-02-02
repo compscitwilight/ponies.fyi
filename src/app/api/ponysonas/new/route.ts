@@ -54,7 +54,9 @@ export async function POST(request: Request) {
                     originalId: validatedBody.derivativeOf,
                     ...(validatedBody.otherNames && { otherNames: validatedBody.otherNames }),
                     description: validatedBody.description,
-                    tagIds: (validatedBody.tagIds && validatedBody.tagIds.length > 0) ? validatedBody.tagIds : [],
+                    tags: {
+                        connect: validatedBody.tagIds.map((id: number) => ({ id }))
+                    },
                     sources: (validatedBody.sources && validatedBody.sources.length > 0) ? validatedBody.sources : [],
                     creators: (validatedBody.creators && validatedBody.creators.length > 0) ? validatedBody.creators : [],
                     ...(user && { submittedById: user.id }),

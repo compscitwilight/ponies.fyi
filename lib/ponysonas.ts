@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { object, string, array, number, mixed } from "yup";
 import prisma from "./prisma";
-import { MediaType, Ponysona, BodyPart, Pattern, Prisma } from "@/generated/client";
+import { MediaType, Ponysona, BodyPart, Pattern, Prisma, PonysonaTag } from "@/generated/client";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { User } from "@supabase/supabase-js";
 import { userAgent } from "next/server";
@@ -61,7 +61,7 @@ export interface RevisionSnapshot {
 
 export async function createPonysonaRevision(
     tx: TransactionClient,
-    ponysona: Ponysona,
+    ponysona: Ponysona & { tags: Array<PonysonaTag> },
     creator?: User
 ) {
     const previewObject = await tx.media.findFirst({
@@ -81,7 +81,7 @@ export async function createPonysonaRevision(
         originalId: ponysona.originalId,
         otherNames: ponysona.otherNames,
         description: ponysona.description,
-        tagIds: ponysona.tagIds,
+        tags: ponysona.tags,
         sources: ponysona.sources,
         creators: ponysona.creators,
         attributes,
