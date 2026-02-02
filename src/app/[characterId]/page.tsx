@@ -63,7 +63,7 @@ export async function generateMetadata(
     if (ponysona.otherNames.length > 0)
         description = description.concat(` (other names: ${ponysona.otherNames.join(", ")}), `);
 
-    description = description.concat(ponysona.description || "no description provided");
+    description = description.concat("\n", ponysona.description || "no description provided");
 
     return {
         title: `${ponysona.primaryName} | ponies.fyi`,
