@@ -23,5 +23,5 @@ Steps below are for installing and setting up ponies.fyi in a local Linux enviro
 
 1. Install [Node.js](https://nodejs.org/en/download)
 2. Clone this repository: `git clone https://github.com/compscitwilight/ponies.fyi`
-3. Run `npm setup` (`npm install` + `npx prisma generate`)
+3. Run `npm run setup` (`npm install` + `npx prisma generate`)
 4. Deploy with `npm run start`
