@@ -6,6 +6,7 @@ import { createClient, getUserProfile } from "lib/supabase";
 
 import { MediaRemove } from "@/components/moderation/MediaRemove";
 import { MetadataField } from "@/components/ponysonas/MetadataField";
+import { EditAttributionField } from "@/components/media/EditAttributionField";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
     const { id } = await params;
@@ -44,7 +45,7 @@ export default async function MediaPage({
             <hr className="h-px my-2 border-0 bg-gray-400/50" />
             <img src={`https://static.ponies.fyi/${id}`} alt={id} />
             <hr className="h-px my-2 border-0 bg-gray-400/50" />
-            <div>
+            <div className="grid gap-2">
                 <div>
                     <h2 className="text-2xl font-bold">Metadata</h2>
                     <MetadataField name="Description" value={mediaObject.description || "No description provided."} />
@@ -60,7 +61,20 @@ export default async function MediaPage({
                         value={`${mediaObject.updatedAt.toLocaleDateString()} ${mediaObject.updatedAt.toLocaleTimeString()} (${moment(mediaObject.updatedAt).fromNow()})`}
                     />
                 </div>
-                {(profile && profile.isAdmin) && <div className="mt-2">
+
+                <div>
+                    <h2 className="text-2xl font-bold">Attribution</h2>
+                    <div className="flex gap-1 items-center">
+                        <MetadataField className="flex flex-1" name="Creator" value={mediaObject.creator || "No creator provided"} />
+                        {user && <EditAttributionField media={mediaObject} type="creator" />}
+                    </div>
+                    <div className="flex gap-1 items-center">
+                        <MetadataField className="flex flex-1" name="Source" value={mediaObject.source || "No source provided"} />
+                        {user && <EditAttributionField media={mediaObject} type="source" />}
+                    </div>
+                </div>
+
+                {(profile && profile.isAdmin) && <div>
                     <h2 className="text-2xl font-bold">Actions</h2>
                     <MediaRemove media={mediaObject} />
                 </div>}
