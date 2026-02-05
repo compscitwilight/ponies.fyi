@@ -4,12 +4,17 @@ import prisma from "./prisma";
 import { MediaType, Ponysona, BodyPart, Pattern, Prisma, PonysonaTag } from "@/generated/client";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { User } from "@supabase/supabase-js";
-import { userAgent } from "next/server";
 
 const PonysonaAttributeBody = object({
     part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
     colors: array(string().required()).required(),
     pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).required()
+});
+
+export const PonysonaAccessoryBody = object({
+    name: string().required().default(undefined),
+    colors: array(string().required()).default(undefined),
+    pattern: mixed<Pattern>().oneOf(Object.values(Pattern)).default(undefined)
 });
 
 export const HexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
@@ -30,6 +35,7 @@ export const PonysonaBody = object({
         horn: PonysonaAttributeBody.nullable().default(undefined),
         eyes: PonysonaAttributeBody.nullable().default(undefined)
     }).nullable().notRequired(),
+    accessories: array(PonysonaAccessoryBody).nullable().notRequired(),
     media: object({
         preview: string().nullable().optional(),
         mark: string().nullable().optional()
@@ -76,6 +82,10 @@ export async function createPonysonaRevision(
         where: { ponysonaId: ponysona.id }
     });
 
+    const accessories = await tx.ponysonaAccessory.findMany({
+        where: { ponysonaId: ponysona.id }
+    });
+
     const snapshot = {
         primaryName: ponysona.primaryName,
         originalId: ponysona.originalId,
@@ -85,6 +95,7 @@ export async function createPonysonaRevision(
         sources: ponysona.sources,
         creators: ponysona.creators,
         attributes,
+        accessories,
         media: {
             ...(previewObject && { preview: previewObject.id }),
             ...(markObject && { mark: markObject.id })

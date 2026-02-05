@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 
 import { BodyPart, Pattern } from "@/generated/enums";
 import { Plus, Trash } from "lucide-react";
+import { NewColor } from "./ponysonas/NewColor";
+import { PatternDropdown } from "./ponysonas/PatternDropdown";
 
 export interface PonysonaAttributePayload {
     part: BodyPart,
@@ -59,15 +61,12 @@ export function CharacterAttributeStyle({
                     {
                         colors.map((color: string, index: number) =>
                         (
-                            <div key={index} className="flex gap-2 items-center">
-                                <input
-                                    type="color"
-                                    defaultValue={color}
-                                    onChange={(e) => setColor(index, e.target.value)}
-                                />
-                                <p>{colors[index]}</p>
-                                <Trash onMouseDown={() => removeColor(index)} className="flex-1 cursor-pointer" />
-                            </div>
+                            <NewColor
+                                key={index}
+                                defaultValue={color}
+                                onChange={(color: string) => setColor(index, color)}
+                                onRemove={() => removeColor(index)}
+                            />
                         ))
                     }
                     <div onMouseDown={() => addColor("#000")} className="flex cursor-pointer">
@@ -78,13 +77,7 @@ export function CharacterAttributeStyle({
             </div>
             <div className="flex-1 self-start grid gap-1">
                 <label className="text-lg font-bold" htmlFor="character-attribute-pattern">Pattern</label>
-                <select className="border p-1 rounded-md border-gray-400/50 cursor-pointer" defaultValue={pattern} onChange={(e) => setPattern(e.target.value as Pattern)}>
-                    {
-                        Object.values(Pattern).map((pattern: Pattern, index: number) =>
-                            <option key={index} value={pattern}>{pattern}</option>
-                        )
-                    }
-                </select>
+                <PatternDropdown defaultValue={pattern} onChange={setPattern} />
             </div>
         </div>
     )

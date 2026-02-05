@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { ValidationError } from "yup";
 
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
-import { MediaStatus } from "@/generated/enums";
+import { MediaStatus, Pattern } from "@/generated/enums";
 
 import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
@@ -82,6 +82,19 @@ export async function POST(request: Request) {
                             pattern: attribute.pattern
                         }
                     })
+                }
+            }
+
+            if (validatedBody.accessories && validatedBody.accessories.length > 0) {
+                for (const accessory of validatedBody.accessories) {
+                    await tx.ponysonaAccessory.create({
+                        data: {
+                            ponysonaId: newPonysona.id,
+                            name: accessory.name,
+                            colors: accessory.colors || [],
+                            pattern: accessory.pattern || Pattern.solid
+                        }
+                    });
                 }
             }
 

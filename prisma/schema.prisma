@@ -39,6 +39,7 @@ model Ponysona {
     colorsName  String[]
     revisions   PonysonaRevision[]
     attributes  PonysonaAppearanceAttribute[]
+    accessories PonysonaAccessory[]
     derivatives Ponysona[]                    @relation("derivatives")
 
     submittedById String?
@@ -72,11 +73,11 @@ model Media {
     description String?
 
     // attribution
-    source      String?
-    creator     String?
-    
-    createdAt   DateTime    @default(now())
-    updatedAt   DateTime    @updatedAt
+    source  String?
+    creator String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
     ponysona Ponysona? @relation(fields: [ponysonaId], references: [id])
 }
@@ -109,6 +110,18 @@ model PonysonaAppearanceAttribute {
     updatedAt DateTime @updatedAt
 
     @@unique([ponysonaId, bodyPart])
+}
+
+model PonysonaAccessory {
+    id         Int      @id @default(autoincrement())
+    ponysonaId String
+    name       String
+    colors     String[]
+    pattern    Pattern  @default(solid)
+
+    ponysona Ponysona @relation(fields: [ponysonaId], references: [id])
+
+    @@unique([ponysonaId, name])
 }
 
 model PonysonaRevision {

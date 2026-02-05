@@ -15,7 +15,9 @@ import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
 import { PonysonaStatusDropdown } from "@/components/moderation/PonysonaStatusDropdown";
 import { PonysonaGallery } from "@/components/PonysonaGallery";
 import { MetadataField } from "@/components/ponysonas/MetadataField";
+import { Accessories } from "@/components/ponysonas/Accessories";
 import { Description } from "@/components/ponysonas/Description";
+import { HexCode } from "@/components/ponysonas/HexCode";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
@@ -23,21 +25,12 @@ function AttributeField({
 }: { name: string, colors: Array<string>, pattern?: Pattern }) {
     return (
         <div className="flex">
-            <b className="flex-1">{name}</b>
+            <b className="flex-1 text-lg">{name[0].toUpperCase().concat(name.slice(1))}</b>
             <div className="flex flex-2 gap-2 items-center">
                 <p>{pattern}</p>
                 {
                     colors.map((color: string) =>
-                        <div
-                            key={color}
-                            className="text-xs font-bold p-2 border border-gray-500"
-                            style={{
-                                backgroundColor: color,
-                                color: tinycolor(color).isDark() ? "#929292" : "#000"
-                            }}
-                        >
-                            {color}
-                        </div>
+                        <HexCode color={color} />
                     )
                 }
             </div>
@@ -104,7 +97,7 @@ export default async function CharacterPage({ params }: {
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
         where: { slug: characterId },
-        include: { attributes: true, tags: true }
+        include: { attributes: true, accessories: true, tags: true }
     });
 
     if (ponysona === null)
@@ -152,7 +145,7 @@ export default async function CharacterPage({ params }: {
 
                     {/* Attributes */}
                     {ponysona.attributes.length > 0 && <>
-                        <h2 className="mt-4 text-lg font-bold">Attributes</h2>
+                        <h2 className="mt-4 text-lg font-lexie-bold">Attributes</h2>
                         <hr className="h-px my-2 border-0 bg-gray-400/50" />
                         <div>
                             {ponysona.attributes.map((attribute: PonysonaAppearanceAttribute) =>
@@ -161,13 +154,22 @@ export default async function CharacterPage({ params }: {
                         </div>
                     </>}
 
+                    {/* Accessories */}
+                    <div className="mt-2">
+                        <Accessories
+                            ponysona={ponysona}
+                            accessories={ponysona.accessories}
+                            allowEditing={user !== null}
+                        />
+                    </div>
+
                     {/* Description */}
-                    <h2 className="mt-4 text-lg font-bold">Description</h2>
+                    <h2 className="mt-4 text-lg font-lexie-bold">Description</h2>
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
                     {ponysona.description ? <Description description={ponysona.description} /> : <i>No description provided.</i>}
 
                     {/* Metadata */}
-                    <h2 className="mt-4 text-lg font-bold">Metadata</h2>
+                    <h2 className="mt-4 text-lg font-lexie-bold">Metadata</h2>
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
                     <MetadataField name="Internal ID" value={ponysona.id} />
                     <MetadataField name="Creators" value={ponysona.creators.length > 0 ? ponysona.creators.join(", ") : "not provided"} />
@@ -181,7 +183,7 @@ export default async function CharacterPage({ params }: {
                     <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
 
                     {/* Derivatives */}
-                    <h2 className="mt-4 text-lg font-bold">Derivatives</h2>
+                    <h2 className="mt-4 text-lg font-lexie-bold">Derivatives</h2>
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
                     {
                         derivatives.length > 0 ? (

@@ -5,7 +5,6 @@ import prisma from "lib/prisma";
 import { createClient } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import {
-    RevisionSnapshot,
     PonysonaBody as UpdatePonysonaBody,
     HexColorRegex,
     createPonysonaRevision
@@ -134,17 +133,10 @@ export async function PUT(
                     });
 
                     if (existingMediaObject !== null && uuid === null) {
-                        // if (uuid === null) {
                         await tx.media.update({
                             where: { id: existingMediaObject.id },
                             data: { ponysonaId: null, status: MediaStatus.finalized }
                         });
-                        // } else {
-                        //     await tx.media.update({
-                        //         where: { id: existingMediaObject.id },
-                        //         data: { ponysonaId: ponysona.id, status: MediaStatus.uploaded }
-                        //     })
-                        // }
                     } else {
                         await tx.media.update({
                             where: { id: uuid as string },
