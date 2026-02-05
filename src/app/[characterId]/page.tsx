@@ -176,7 +176,7 @@ export default async function CharacterPage({ params }: {
                     <MetadataField name="Status" value={ponysona.status} />
                     {
                         ponysona.submittedById &&
-                            <MetadataField name="Added by" value={`User ${ponysona.submittedById}`} />
+                        <MetadataField name="Added by" value={`User ${ponysona.submittedById}`} />
                     }
                     <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
                     <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
@@ -218,13 +218,17 @@ export default async function CharacterPage({ params }: {
                 <div>
                     <label className="text-lg font-bold" htmlFor="character-preview">Preview</label>
                     {previewImageRes ?
-                        <img id="character-preview" src={`/api/ponysonas/${ponysona.id}/preview`} /> :
+                        <Link href={`/media/${previewImageRes.id}`}>
+                            <img id="character-preview" src={`/api/ponysonas/${ponysona.id}/preview`} />
+                        </Link> :
                         <p>No preview image provided</p>}
                 </div>
                 <div>
                     <label className="text-lg font-bold" htmlFor="character-mark">Cutie Mark</label>
                     {markImageRes ?
-                        <img id="character-mark" src={`/api/ponysonas/${ponysona.id}/mark`} /> :
+                        <Link href={`/media/${markImageRes.id}`}>
+                            <img id="character-mark" src={`/api/ponysonas/${ponysona.id}/mark`} />
+                        </Link> :
                         <p>No cutie mark provided.</p>}
                 </div>
             </div>
