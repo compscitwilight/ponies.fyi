@@ -210,7 +210,7 @@ export default async function CharacterPage({ params }: {
                 <PonysonaGallery
                     ponysona={ponysona}
                     gallery={galleryObjects}
-                    mediaUploads={user !== null && (profile === null || profile.canRemoveGalleryImages)}
+                    mediaUploads={user !== null}
                 />
             </div>
 
