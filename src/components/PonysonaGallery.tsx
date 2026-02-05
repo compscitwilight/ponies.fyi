@@ -28,13 +28,13 @@ export function PonysonaGallery({ ponysona, gallery, mediaUploads }: {
             <div className="grid lg:grid-cols-3">
                 {mediaUploads && <MediaUpload onUploadComplete={onImageUploadComplete} type="gallery" />}
                 {
-                    gallery.length > 0 && gallery.map((object: Media) =>
+                    gallery.length > 0 ? gallery.map((object: Media) =>
                         <Link key={object.id} href={`/media/${object.id}`}>
                             <img
                                 src={`https://static.ponies.fyi/${object.id}`}
                             />
                         </Link>
-                    )
+                    ) : <i>No gallery items could be found.</i>
                 }
             </div>
         </div>
