@@ -15,6 +15,7 @@ import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
 import { PonysonaStatusDropdown } from "@/components/moderation/PonysonaStatusDropdown";
 import { PonysonaGallery } from "@/components/PonysonaGallery";
 import { MetadataField } from "@/components/ponysonas/MetadataField";
+import { Description } from "@/components/ponysonas/Description";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
@@ -163,9 +164,7 @@ export default async function CharacterPage({ params }: {
                     {/* Description */}
                     <h2 className="mt-4 text-lg font-bold">Description</h2>
                     <hr className="h-px my-2 border-0 bg-gray-400/50" />
-                    {
-                        ponysona.description ? <p>{ponysona.description}</p> : <i>No description provided.</i>
-                    }
+                    {ponysona.description ? <Description description={ponysona.description} /> : <i>No description provided.</i>}
 
                     {/* Metadata */}
                     <h2 className="mt-4 text-lg font-bold">Metadata</h2>
