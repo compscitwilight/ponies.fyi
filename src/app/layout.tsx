@@ -48,13 +48,13 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Suspense>
-          <div className="flex flex-col lg:flex-row lg:w-2/3 m-auto border-b border-gray-400/50">
+          <div className="flex flex-col lg:flex-row lg:w-2/3 pb-4 m-auto border-b border-gray-400/50">
             <div className="flex flex-col lg:flex-row flex-1 items-center gap-4">
               <div className="flex items-center gap-1">
                 <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
                 <Link href="/" className="font-equestria ml-4">ponies.fyi</Link>
               </div>
-              <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center">
+              <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center flex-wrap">
                 <Link href="/">[ Home ]</Link>
                 {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>}
                 <Link href="/pages/guidelines">[ Guidelines & FAQ ]</Link>
@@ -62,20 +62,22 @@ export default async function RootLayout({
               </div>
               {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}
             </div>
-            <SearchBox />
-            <div className="flex items-center gap-4 mr-4">
-              <a href="/pages/create" title="Add pony" className="cursor-pointer">
-                <Plus />
-              </a>
-              <a
-                href="https://github.com/compscitwilight/ponies.fyi"
-                target="_blank"
-                title="Source code"
-                className="flex items-center gap-1 cursor-pointer transition-text duration-200 hover:text-blue-500"
-              >
-                <Github />
-                <p>{sha.slice(0, 6)}</p>
-              </a>
+            <div className="flex flex-col lg:flex-row items-center gap-4 mr-4">
+              <SearchBox />
+              <div className="flex gap-1">
+                <a href="/pages/create" title="Add pony" className="cursor-pointer">
+                  <Plus />
+                </a>
+                <a
+                  href="https://github.com/compscitwilight/ponies.fyi"
+                  target="_blank"
+                  title="Source code"
+                  className="flex items-center gap-1 cursor-pointer transition-text duration-200 hover:text-blue-500"
+                >
+                  <Github />
+                  <p>{sha.slice(0, 6)}</p>
+                </a>
+              </div>
             </div>
           </div>
 

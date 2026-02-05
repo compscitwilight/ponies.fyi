@@ -215,7 +215,7 @@ export default async function CharacterPage({ params }: {
             </div>
 
             {/* Media */}
-            <div className="grid grid-cols-2 lg:grid-cols-1 lg:w-auto w-full flex-1 self-start order-first lg:order-last rounded-lg border p-2 border-gray-400/50">
+            <div className="grid gap-4 justify-center lg:w-auto w-full flex-1 self-start order-first lg:order-last rounded-lg border p-2 border-gray-400/50">
                 <div>
                     <label className="text-lg font-bold" htmlFor="character-preview">Preview</label>
                     {previewImageRes ?
