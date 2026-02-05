@@ -323,7 +323,7 @@ export default function CreatePage({
                     <label htmlFor="description-field" className="font-bold">Description (optional)</label>
                     <textarea
                         onChange={(e) => setDescription(e.target.value)}
-                        className="resize-none rounded-md border border-gray-400/50"
+                        className="rounded-md border border-gray-400/50"
                         defaultValue={description}
                         id="description-field"
                     />
