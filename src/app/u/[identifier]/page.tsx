@@ -34,7 +34,7 @@ export default async function UserProfilePage({ params }: {
         redirect("/?state=user_not_found");
 
     const ponysonasAdded = await prisma.ponysona.count({ where: { submittedById: profile.userId } });
-    const ponysonasModified = await prisma.ponysonaRevision.count({ where: { createdById: profile.userId } });
+    const revisionsCreated = await prisma.ponysonaRevision.count({ where: { createdById: profile.userId } });
 
     return (
         <div>
@@ -51,8 +51,8 @@ export default async function UserProfilePage({ params }: {
                         <p>{ponysonasAdded}</p>
                     </div>
                     <div className="flex gap-1 items-center">
-                        <p className="text-lg font-bold">Ponysonas modified</p>
-                        <p>{ponysonasModified}</p>
+                        <p className="text-lg font-bold">Revisions created</p>
+                        <p>{revisionsCreated}</p>
                     </div>
                 </div>
             </div>
