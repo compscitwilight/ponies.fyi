@@ -22,16 +22,18 @@ function AccessoryListing({
 
     return (
         <div className="flex">
-            <div className="flex-1 flex gap-2 items-center">
-                <h3 className="text-lg font-bold">{accessory.name}</h3>
-                <p>{accessory.pattern}</p>
+            <div className="flex-1 grid items-center">
+                <div className="flex gap-2 items-center">
+                    <h3 className="text-lg font-bold">{accessory.name}</h3>
+                    <p>{accessory.pattern}</p>
+                </div>
                 <div className="flex gap-2">
                     {deduplicatedColors.map((color: string) =>
                         <HexCode key={color} color={color} />
                     )}
                 </div>
             </div>
-            {allowEdit && <div className="flex gap-2">
+            {allowEdit && <div className="flex self-start gap-2">
                 <button className="text-red-600 underline cursor-pointer" onMouseDown={onRemove}>Remove</button>
                 <button className="text-sky-600 underline cursor-pointer" onMouseDown={onSelect}>Edit</button>
             </div>}

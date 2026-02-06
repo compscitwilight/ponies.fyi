@@ -137,7 +137,7 @@ export default async function CharacterPage({ params }: {
                     </div>}
 
                     {/* Tags */}
-                    <div className="flex gap-1 items-center">
+                    <div className="flex gap-1 flex-wrap items-center">
                         {ponysona.tags.map((tag: PonysonaTag) =>
                             <Tag key={tag.id} tag={tag} redirect />
                         )}
