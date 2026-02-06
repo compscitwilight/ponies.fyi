@@ -15,6 +15,7 @@ enum PonysonaStatus {
 
 model Profile {
     userId                 String     @id
+    alias                  String?
     isAdmin                Boolean    @default(false)
     canUpload              Boolean    @default(true) // only applies to gallery images
     canRemoveGalleryImages Boolean    @default(true)

@@ -22,7 +22,13 @@ export default async function HomePage({ searchParams }: {
     page?: string,
     q?: string,
     max_results?: string,
-    state?: "ponysona_not_found" | "page_not_found" | "media_not_found" | "auth_error" | "logged_out" | "unauthorized"
+    state?: "ponysona_not_found" |
+      "page_not_found" |
+      "media_not_found" |
+      "user_not_found" |
+      "auth_error" |
+      "logged_out" |
+      "unauthorized"
   }>
 }) {
   const {
@@ -65,6 +71,7 @@ export default async function HomePage({ searchParams }: {
       {pageState === "page_not_found" && <PageWarning>The page requested could not be found.</PageWarning>}
       {pageState === "ponysona_not_found" && <PageWarning>The ponysona requested could not be found.</PageWarning>}
       {pageState === "media_not_found" && <PageWarning>The media requested could not be found.</PageWarning>}
+      {pageState === "user_not_found" && <PageWarning>The user requested could not be found.</PageWarning>}
       {pageState === "auth_error" && <PageWarning>An unexpected error occurred while authenticating.</PageWarning>}
       {pageState === "logged_out" && <PageWarning>Logged out successfully.</PageWarning>}
       {pageState === "unauthorized" && <PageWarning>You are not allowed to access that page.</PageWarning>}

@@ -2,7 +2,6 @@ import { Metadata, ResolvingMetadata, Viewport } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import moment from "moment";
-import tinycolor from "tinycolor2";
 
 import { getPonysonaPreview, getPonysonaMark, getPonysonaGallery } from "lib/ponysonas";
 import prisma from "lib/prisma";
@@ -18,6 +17,7 @@ import { MetadataField } from "@/components/ponysonas/MetadataField";
 import { Accessories } from "@/components/ponysonas/Accessories";
 import { Description } from "@/components/ponysonas/Description";
 import { HexCode } from "@/components/ponysonas/HexCode";
+import { UserLink } from "@/components/users/UserLink";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
@@ -137,7 +137,7 @@ export default async function CharacterPage({ params }: {
                     </div>}
 
                     {/* Tags */}
-                    <div className="flex gap-1 items-center">
+                    <div className="flex gap-1 flex-wrap items-center">
                         {ponysona.tags.map((tag: PonysonaTag) =>
                             <Tag key={tag.id} tag={tag} redirect />
                         )}
@@ -177,7 +177,9 @@ export default async function CharacterPage({ params }: {
                     <MetadataField name="Status" value={ponysona.status} />
                     {
                         ponysona.submittedById &&
-                        <MetadataField name="Added by" value={`User ${ponysona.submittedById}`} />
+                        <MetadataField name="Added by">
+                            <UserLink id={ponysona.submittedById} />
+                        </MetadataField>
                     }
                     <MetadataField name="Added to ponies.fyi" value={`${ponysona.createdAt.toLocaleDateString()} ${ponysona.createdAt.toLocaleTimeString()} (${moment(ponysona.createdAt).fromNow()})`} />
                     <MetadataField name="Last modified" value={`${ponysona.updatedAt.toLocaleDateString()} ${ponysona.updatedAt.toLocaleTimeString()} (${moment(ponysona.updatedAt).fromNow()})`} />
