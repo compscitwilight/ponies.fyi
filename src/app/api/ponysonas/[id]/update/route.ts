@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { ValidationError } from "yup";
 import prisma from "lib/prisma";
-import { createClient } from "lib/supabase";
+import { createClient, getUserProfile } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import {
     PonysonaBody as UpdatePonysonaBody,
@@ -27,6 +27,8 @@ export async function PUT(
         { status: 401 }
     );
 
+    const profile = user ? await getUserProfile(user) : null;
+
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
         return NextResponse.json(
@@ -41,6 +43,12 @@ export async function PUT(
     }
 
     const validatedBody = await UpdatePonysonaBody.validate(body);
+    if (validatedBody.slug && !profile?.isAdmin)
+        return NextResponse.json(
+            { message: StatusMessages.SLUG_MODIFICATION_NOT_PERMITTED },
+            { status: 403 }
+        );
+
     try {
         return await prisma.$transaction(async (tx: TransactionClient) => {
             // latest data //
@@ -64,6 +72,7 @@ export async function PUT(
             await tx.ponysona.update({
                 where: { id: ponysona.id },
                 data: {
+                    ...(validatedBody.slug && { slug: validatedBody.slug }),
                     primaryName: validatedBody.primaryName,
                     otherNames: validatedBody.otherNames,
                     description: validatedBody.description,

@@ -20,6 +20,7 @@ export const PonysonaAccessoryBody = object({
 export const HexColorRegex = /^#(?:[0-9a-fA-F]{3}){1,2}$/;
 
 export const PonysonaBody = object({
+    slug: string().optional(),
     primaryName: string().required(),
     otherNames: array(string().required()).optional().default(new Array<string>()),
     derivativeOf: string().optional(),

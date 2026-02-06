@@ -9,11 +9,12 @@ import prisma from "lib/prisma";
 import { generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
 import { PonysonaBody as NewPonysonaBody, HexColorRegex } from "lib/ponysonas";
-import { createClient } from "lib/supabase";
+import { createClient, getUserProfile } from "lib/supabase";
 
 export async function POST(request: Request) {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const profile = user ? await getUserProfile(user) : null;
 
     const requestHeaders = await headers();
     if (requestHeaders.get("content-type") !== "application/json")
@@ -32,8 +33,14 @@ export async function POST(request: Request) {
     }
 
     const validatedBody = await NewPonysonaBody.validate(requestBody);
+    if (validatedBody.slug && !profile?.isAdmin)
+        return NextResponse.json(
+            { message: StatusMessages.SLUG_MODIFICATION_NOT_PERMITTED },
+            { status: 403 }
+        );
+
     try {
-        const slug = await generatePonysonaSlug(validatedBody.primaryName);
+        const slug = validatedBody.slug || await generatePonysonaSlug(validatedBody.primaryName);
         return await prisma.$transaction(async (tx: TransactionClient) => {
             if (validatedBody.derivativeOf) {
                 const originalPonysona = await tx.ponysona.findUnique({

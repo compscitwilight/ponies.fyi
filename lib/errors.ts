@@ -3,6 +3,7 @@ export const StatusMessages = {
     INTERNAL_SERVER_ERROR: "An internal server error occurred",
     PONYSONA_NOT_FOUND: "The ponysona requested could not be found",
     PONYSONA_LOCKED: "This ponysona is currently locked and cannot be modified.",
+    SLUG_MODIFICATION_NOT_PERMITTED: "You must be an administrator in order to modify slugs.",
     MEDIA_NOT_FOUND: "The media object requested could not be found",
     NOT_AUTHENTICATED: "You must be authenticated to access this endpoint",
     NOT_PERMITTED: "You are not permitted to perform this action"

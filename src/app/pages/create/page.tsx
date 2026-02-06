@@ -1,12 +1,12 @@
 "use client";
 
 import React, { FormEvent, useState, useEffect, PropsWithChildren } from "react";
-// import { redirect } from "next/navigation";
+import Link from "next/link";
 import type { Ponysona, BodyPart, MediaType, PonysonaTag, PonysonaAppearanceAttribute, Media } from "@/generated/client";
 import { Asterisk } from "lucide-react";
-import { supabase } from "@/lib/auth";
-import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
+import { supabase, getUserAndProfile } from "@/lib/auth";
 
+import { PonysonaAttributePayload } from "@/components/CharacterAttributeStyle";
 import { Tag } from "@/components/Tag";
 import { MediaUpload } from "@/components/MediaUpload";
 import { CharacterAttributeStyle } from "@/components/CharacterAttributeStyle";
@@ -14,7 +14,6 @@ import { CharacterAttributeStyle } from "@/components/CharacterAttributeStyle";
 import { NamePill } from "@/components/pills/Name";
 import { SourcePill } from "@/components/pills/Source";
 import { CreatorPill } from "@/components/pills/Creator";
-import Link from "next/link";
 
 const RequiredAsterisk = () => <Asterisk size={18} className="text-red-400" />;
 
@@ -58,7 +57,9 @@ export default function CreatePage({
 
     // used when editing for redirecting
     const [existingSlug, setExistingSlug] = useState<string>();
-
+    const [isAdmin, setIsAdmin] = useState<boolean>();
+    
+    const [newSlug, setNewSlug] = useState<string>();
     const [primaryName, setPrimaryName] = useState<string>();
     const [otherNames, setOtherNames] = useState<Array<string>>(new Array<string>());
     const [description, setDescription] = useState<string>();
@@ -80,6 +81,7 @@ export default function CreatePage({
     function onFormSubmit(ev: FormEvent) {
         ev.preventDefault();
         const reqPayload = {
+            slug: newSlug,
             primaryName,
             derivativeOf,
             otherNames,
@@ -202,6 +204,7 @@ export default function CreatePage({
                         tags: Array<PonysonaTag>
                     };
 
+                    setNewSlug(editing);
                     setPrimaryName(data.primaryName);
 
                     setOtherNames(data.otherNames);
@@ -236,9 +239,11 @@ export default function CreatePage({
                         .finally(() => setExistingSlug(data.slug));
                 })
 
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (!session) window.location.assign("/?state=unauthorized");
-        })
+        getUserAndProfile()
+            .then((res) => {
+                if (editing && res === null) window.location.assign("/?state=unauthorized");
+                if (res) setIsAdmin(res.profile?.isAdmin);
+            }) 
     }, [setAvailableTags, setAttributes])
 
     return (editing ? editing && existingSlug : true) && (
@@ -268,6 +273,19 @@ export default function CreatePage({
                         />
                     </div>
                 </div>
+
+                {/* Slug (admin-only) */}
+                {isAdmin && <div className="grid gap-1">
+                    <div className="flex gap-1">
+                        <label htmlFor="slug-field" className="font-bold">Slug</label>
+                    </div>
+                    <input
+                        id="slug-field"
+                        className="rounded-md p-1 border border-gray-300"
+                        defaultValue={existingSlug}
+                        onChange={(e) => setNewSlug(e.target.value)}
+                    />
+                </div>}
 
                 {/* Primary name */}
                 <div className="grid gap-1">
