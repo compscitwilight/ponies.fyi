@@ -204,7 +204,7 @@ export default function CreatePage({
                         tags: Array<PonysonaTag>
                     };
 
-                    setNewSlug(editing);
+                    setNewSlug(data.slug);
                     setPrimaryName(data.primaryName);
 
                     setOtherNames(data.otherNames);
@@ -282,7 +282,7 @@ export default function CreatePage({
                     <input
                         id="slug-field"
                         className="rounded-md p-1 border border-gray-300"
-                        defaultValue={existingSlug}
+                        defaultValue={newSlug}
                         onChange={(e) => setNewSlug(e.target.value)}
                     />
                 </div>}
