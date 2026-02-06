@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Suspense } from "react";
+import { Analytics } from "@vercel/analytics/next"
 
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
@@ -87,6 +88,7 @@ export default async function RootLayout({
         </div> */}
         <div className="lg:w-1/2 m-auto mt-8">
           {children}
+          <Analytics />
         </div>
       </body>
     </html>
