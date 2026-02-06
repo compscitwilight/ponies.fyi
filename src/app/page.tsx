@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import prisma from "lib/prisma";
-import { ArrowLeft, ArrowRight } from "lucide-react";
-import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag } from "@/generated/client";
+import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag, Prisma } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
+import { PageNavigation } from "@/components/search/PageNavigation";
+import { MaxResultsDropdown } from "@/components/search/MaxResultsDropdown";
 
 function PageWarning({ children }: PropsWithChildren) {
   return (
@@ -20,79 +21,58 @@ export default async function HomePage({ searchParams }: {
   searchParams: Promise<{
     page?: string,
     q?: string,
-    state?: "ponysona_not_found" | "page_not_found" | "auth_error" | "logged_out" | "unauthorized"
+    max_results?: string,
+    state?: "ponysona_not_found" | "page_not_found" | "media_not_found" | "auth_error" | "logged_out" | "unauthorized"
   }>
 }) {
-  const { page: pageParam, q: query, state: pageState } = await searchParams;
+  const {
+    page: pageParam,
+    q: query,
+    max_results,
+    state: pageState
+  } = await searchParams;
+
   const page = Math.max(1, Number(parseInt(pageParam ?? "1")));
-  const itemsPerPage = 50;
+  const parsedMaxResults = Math.min(parseInt(max_results as string) || 15, 100);
+  const searchTerms = query ? query.split(",").map((t: string) => t.trim()) : [];
+
+  const conditions = searchTerms.map((term: string) => ({
+    OR: [
+      { primaryName: { contains: term, mode: "insensitive" } },
+      { description: { contains: term, mode: "insensitive" } },
+      { tags: { some: { name: { contains: term, mode: "insensitive" } } } }
+    ]
+  }))
+
+  const where: Prisma.PonysonaWhereInput | any = {
+    ...(searchTerms.length ? (searchTerms.length > 1 ? { AND: conditions } : { OR: conditions }) : {}),
+    status: PonysonaStatus.Approved
+  };
 
   const ponysonas = await prisma.ponysona.findMany({
-    where: {
-      ...(query && {
-        OR: [
-          { primaryName: { contains: query, mode: "insensitive" } },
-          { otherNames: { has: query } },
-          { description: { contains: query, mode: "default" } },
-          { tags: { some: { name: { contains: query, mode: "insensitive" } } } }
-        ]
-      }),
-      status: PonysonaStatus.Approved
-    },
-    orderBy: {
-      updatedAt: "desc"
-    },
-    include: {
-      attributes: true,
-      tags: true
-    },
-    skip: (page - 1) * itemsPerPage,
-    take: itemsPerPage
+    where,
+    orderBy: { updatedAt: "desc" },
+    include: { attributes: true, tags: true },
+    skip: (page - 1) * parsedMaxResults,
+    take: parsedMaxResults
   });
 
-  // for (const ponysona of ponysonas)
-  //   ponysona.tags = await Promise.all(ponysona.tagIds.map((tagId: number) =>
-  //     prisma.ponysonaTag.findUnique({ where: { id: tagId } })
-  //   )) as Array<PonysonaTag>;
-
-  const ponysonasCount = await prisma.ponysona.count();
-  const totalPages = Math.max(1, Math.ceil(ponysonasCount / itemsPerPage));
-
-  function goToPage(nextPage: number) {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("page", String(nextPage));
-  }
+  const ponysonasCount = await prisma.ponysona.count({ where });
+  const totalPages = Math.max(1, Math.ceil(ponysonasCount / parsedMaxResults));
 
   return (
-    <div>
-      {
-        pageState === "page_not_found" &&
-        <PageWarning>The page requested could not be found.</PageWarning>
-      }
-
-      {
-        pageState === "ponysona_not_found" &&
-        <PageWarning>The ponysona requested could not be found</PageWarning>
-      }
-
-      {
-        pageState === "auth_error" &&
-        <PageWarning>An unexpected error occurred while authenticating.</PageWarning>
-      }
-
-      {
-        pageState === "logged_out" &&
-        <PageWarning>Logged out successfully.</PageWarning>
-      }
-
-      {
-        pageState === "unauthorized" &&
-        <PageWarning>You are not allowed to access that page.</PageWarning>
-      }
+    <div className="pb-4">
+      {pageState === "page_not_found" && <PageWarning>The page requested could not be found.</PageWarning>}
+      {pageState === "ponysona_not_found" && <PageWarning>The ponysona requested could not be found.</PageWarning>}
+      {pageState === "media_not_found" && <PageWarning>The media requested could not be found.</PageWarning>}
+      {pageState === "auth_error" && <PageWarning>An unexpected error occurred while authenticating.</PageWarning>}
+      {pageState === "logged_out" && <PageWarning>Logged out successfully.</PageWarning>}
+      {pageState === "unauthorized" && <PageWarning>You are not allowed to access that page.</PageWarning>}
 
       <h1 className="text-3xl font-bold">Home</h1>
       <hr className="h-px my-2 border-0 bg-gray-300" />
       <div>
+        <MaxResultsDropdown />
         {ponysonas.length > 0 && <div className="grid lg:grid-cols-3 gap-2">
           {
             ponysonas.map((item: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }, index: number) =>
@@ -107,11 +87,7 @@ export default async function HomePage({ searchParams }: {
           </div>
         )}
 
-        {/* nav */}
-        <div className="flex items-center justify-center gap-2">
-          {page > 1 && <ArrowLeft onMouseDown={() => goToPage(page - 1)} />}
-          {page < totalPages && <ArrowRight onMouseDown={() => goToPage(page + 1)} />}
-        </div>
+        <PageNavigation currentPage={page} totalPages={totalPages} />
       </div>
     </div>
   );
