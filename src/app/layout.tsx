@@ -75,7 +75,7 @@ export default async function RootLayout({
                   className="flex items-center gap-1 cursor-pointer transition-text duration-200 hover:text-blue-500"
                 >
                   <Github />
-                  <p>{sha.slice(0, 6)}</p>
+                  <p>{sha.slice(0, 7)}</p>
                 </a>
               </div>
             </div>
