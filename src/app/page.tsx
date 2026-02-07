@@ -5,6 +5,7 @@ import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag, Pri
 import { PonysonaResult } from "@/components/PonysonaResult";
 import { PageNavigation } from "@/components/search/PageNavigation";
 import { MaxResultsDropdown } from "@/components/search/MaxResultsDropdown";
+import { RandomPage } from "@/components/search/RandomPage";
 
 function PageWarning({ children }: PropsWithChildren) {
   return (
@@ -23,12 +24,12 @@ export default async function HomePage({ searchParams }: {
     q?: string,
     max_results?: string,
     state?: "ponysona_not_found" |
-      "page_not_found" |
-      "media_not_found" |
-      "user_not_found" |
-      "auth_error" |
-      "logged_out" |
-      "unauthorized"
+    "page_not_found" |
+    "media_not_found" |
+    "user_not_found" |
+    "auth_error" |
+    "logged_out" |
+    "unauthorized"
   }>
 }) {
   const {
@@ -76,10 +77,18 @@ export default async function HomePage({ searchParams }: {
       {pageState === "logged_out" && <PageWarning>Logged out successfully.</PageWarning>}
       {pageState === "unauthorized" && <PageWarning>You are not allowed to access that page.</PageWarning>}
 
-      <h1 className="text-3xl font-bold">Home</h1>
+      <div className="flex items-center">
+        <h1 className="flex-1 text-3xl font-bold">Home</h1>
+        <div className="flex items-center gap-4">
+          <MaxResultsDropdown />
+          <Link className="bg-emerald-400 text-white p-1 rounded-md cursor-pointer transition-bg duration-200 hover:bg-emerald-300/75" href="/pages/create">
+            Add a ponysona
+          </Link>
+          <RandomPage />
+        </div>
+      </div>
       <hr className="h-px my-2 border-0 bg-gray-300" />
       <div>
-        <MaxResultsDropdown />
         {ponysonas.length > 0 && <div className="grid lg:grid-cols-3 gap-2">
           {
             ponysonas.map((item: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }, index: number) =>
