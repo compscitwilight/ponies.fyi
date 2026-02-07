@@ -14,8 +14,8 @@ enum PonysonaStatus {
 }
 
 model SiteSettings {
-    key   String @id
-    value String
+    key   String  @id
+    value String?
 }
 
 model Profile {
