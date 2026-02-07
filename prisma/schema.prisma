@@ -13,6 +13,11 @@ enum PonysonaStatus {
     Hidden
 }
 
+model SiteSettings {
+    key   String @id
+    value String
+}
+
 model Profile {
     userId                 String     @id
     alias                  String?
