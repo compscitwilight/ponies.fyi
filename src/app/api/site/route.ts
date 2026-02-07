@@ -5,7 +5,7 @@ import { createClient, getUserProfile } from "lib/supabase";
 import { StatusMessages } from "lib/errors";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 
-export async function PATCH(request: Request) {
+async function requireAdmin() {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
     if (user === null) return NextResponse.json(
@@ -18,6 +18,21 @@ export async function PATCH(request: Request) {
         { message: StatusMessages.NOT_PERMITTED },
         { status: 403 }
     );
+
+    return null;
+}
+
+export async function GET(request: Request) {
+    const error = await requireAdmin();
+    if (error) return error;
+
+    const siteSettings = await prisma.siteSettings.findMany();
+    return NextResponse.json(siteSettings, { status: 200 });
+}
+
+export async function PATCH(request: Request) {
+    const error = await requireAdmin();
+    if (error) return error;
 
     if (request.headers.get("content-type") !== "application/json")
         return NextResponse.json(
