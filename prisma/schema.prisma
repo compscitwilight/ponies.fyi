@@ -157,12 +157,14 @@ enum RelationshipDirection {
 }
 
 model PonysonaRelationship {
-    id        Int                    @id @default(autoincrement())
+    id        Int                   @id @default(autoincrement())
     type      RelationshipType
-    direction RelationshipDirection?
+    direction RelationshipDirection @default(AB)
+    ponysonaA String
+    ponysonaB String
     label     String?
-    createdAt DateTime               @default(now())
-    updatedAt DateTime               @updatedAt
+    createdAt DateTime              @default(now())
+    updatedAt DateTime              @updatedAt
 
     ponysonas Ponysona[] @relation("relationships")
 }
