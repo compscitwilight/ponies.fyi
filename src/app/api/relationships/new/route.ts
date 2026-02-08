@@ -60,8 +60,8 @@ export async function POST(request: Request) {
 
             const newRelationship = await tx.ponysonaRelationship.create({
                 data: {
-                    ponysonaA: ponysonaA.id,
-                    ponysonaB: ponysonaB.id,
+                    ponysonaA: { connect: { id: ponysonaA.id } },
+                    ponysonaB: { connect: { id: ponysonaB.id } },
                     type: validatedBody.type,
                     direction: validatedBody.direction
                 }
