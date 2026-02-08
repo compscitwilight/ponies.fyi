@@ -9,7 +9,7 @@ import prisma from "lib/prisma";
 import { createClient, getUserProfile } from "lib/supabase";
 
 import { Tag } from "@/components/Tag";
-import { Pattern, Ponysona, PonysonaAccessory, PonysonaAppearanceAttribute, PonysonaTag, Profile, Media } from "@/generated/client";
+import { Pattern, Ponysona, PonysonaAccessory, PonysonaAppearanceAttribute, PonysonaTag, Profile, Media, PonysonaRelationship } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
 import { PonysonaLockToggle } from "@/components/PonysonaLockToggle";
 import { PonysonaStatusDropdown } from "@/components/moderation/PonysonaStatusDropdown";
@@ -19,6 +19,8 @@ import { Accessories } from "@/components/ponysonas/Accessories";
 import { Description } from "@/components/ponysonas/Description";
 import { HexCode } from "@/components/ponysonas/HexCode";
 import { UserLink } from "@/components/users/UserLink";
+import { RelationshipsHierarchy } from "@/components/ponysonas/relationships/RelationshipsHierarchy";
+import Tree from "react-d3-tree";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({
@@ -163,16 +165,49 @@ function AboutView({
     )
 }
 
-function RelationshipsView({
+async function RelationshipsView({
     ponysona,
     user
 }: {
     ponysona: Ponysona,
     user: User | null
 }) {
-    // todo: show relationship specific information
+    const relationships = await prisma.ponysonaRelationship.findMany({
+        where: {
+            OR: [
+                { ponysonaA: { id: ponysona.id } },
+                { ponysonaB: { id: ponysona.id } }
+            ]
+        },
+        include: {
+            ponysonaA: {
+                include: { relationshipsA: true, relationshipsB: true }
+            },
+            ponysonaB: {
+                include: { relationshipsA: true, relationshipsB: true }
+            }
+        }
+    });
+
+    // console.log(relationships)
+
     return (
-        <></>
+        <div className="rounded-lg border p-2 border-gray-400/50">
+            <div className="flex items-center">
+                <h1 className="flex-1 font-bold text-3xl">Relationships</h1>
+                {user &&
+                    <Link
+                        className="font-bold border border-gray-400/50 p-1 rounded-md"
+                        href="/relationships/create"
+                    >Add relationship</Link>
+                }
+            </div>
+            <hr className="h-px my-2 border-0 bg-gray-400/50" />
+            {
+                relationships.length === 0 ? <p>No relationships could be found for {ponysona.primaryName}.</p> :
+                    <RelationshipsHierarchy ponysona={ponysona} relations={relationships} />
+            }
+        </div>
     )
 }
 
@@ -239,7 +274,8 @@ export default async function CharacterPage({ searchParams, params }: {
     const { characterId } = await params;
     const ponysona = await prisma.ponysona.findFirst({
         where: { slug: characterId },
-        include: { attributes: true, accessories: true, tags: true,
+        include: {
+            attributes: true, accessories: true, tags: true,
             derivatives: {
                 include: { tags: true, attributes: true }
             }
