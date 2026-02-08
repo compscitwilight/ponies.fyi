@@ -56,6 +56,9 @@ model Ponysona {
 
     original Ponysona? @relation(name: "derivatives", fields: [originalId], references: [id])
     media    Media[]
+
+    relationshipsA PonysonaRelationship[] @relation("PonysonaARel")
+    relationshipsB PonysonaRelationship[] @relation("PonysonaBRel")
 }
 
 enum MediaType {
@@ -141,6 +144,34 @@ model PonysonaRevision {
 
     createdAt DateTime @default(now())
     ponysona  Ponysona @relation(fields: [ponysonaId], references: [id])
+}
+
+enum RelationshipType {
+    friends
+    siblings
+    parent_child
+    enemies
+}
+
+enum RelationshipDirection {
+    AB
+    BA
+}
+
+model PonysonaRelationship {
+    id        Int                   @id @default(autoincrement())
+    type      RelationshipType
+    direction RelationshipDirection @default(AB)
+
+    ponysonaAId String
+    ponysonaA   Ponysona @relation("PonysonaARel", fields: [ponysonaAId], references: [id])
+
+    ponysonaBId String
+    ponysonaB   Ponysona @relation("PonysonaBRel", fields: [ponysonaBId], references: [id])
+
+    label     String?
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 enum TagType {
