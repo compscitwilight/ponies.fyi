@@ -5,6 +5,7 @@ import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag, Pri
 import { PonysonaResult } from "@/components/PonysonaResult";
 import { PageNavigation } from "@/components/search/PageNavigation";
 import { MaxResultsDropdown } from "@/components/search/MaxResultsDropdown";
+import { ShowHiddenResults } from "@/components/search/ShowHiddenResults";
 import { RandomPage } from "@/components/search/RandomPage";
 
 function PageWarning({ children }: PropsWithChildren) {
@@ -23,6 +24,7 @@ export default async function HomePage({ searchParams }: {
     page?: string,
     q?: string,
     max_results?: string,
+    hidden_results?: string,
     state?: "ponysona_not_found" |
     "page_not_found" |
     "media_not_found" |
@@ -36,7 +38,8 @@ export default async function HomePage({ searchParams }: {
     page: pageParam,
     q: query,
     max_results,
-    state: pageState
+    state: pageState,
+    hidden_results: hiddenResults
   } = await searchParams;
 
   const page = Math.max(1, Number(parseInt(pageParam ?? "1")));
@@ -51,9 +54,11 @@ export default async function HomePage({ searchParams }: {
     ]
   }))
 
+  const statuses = [PonysonaStatus.Approved] as Array<PonysonaStatus>;
+  if (hiddenResults) statuses.push(PonysonaStatus.Hidden);
   const where: Prisma.PonysonaWhereInput | any = {
     ...(searchTerms.length ? (searchTerms.length > 1 ? { AND: conditions } : { OR: conditions }) : {}),
-    status: PonysonaStatus.Approved
+    status: { in: statuses }
   };
 
   const ponysonas = await prisma.ponysona.findMany({
@@ -81,6 +86,7 @@ export default async function HomePage({ searchParams }: {
         <h1 className="flex-1 text-3xl font-bold">Home</h1>
         <div className="flex items-center gap-4">
           <MaxResultsDropdown />
+          <ShowHiddenResults />
           <Link className="bg-emerald-400 text-white p-1 rounded-md cursor-pointer transition-bg duration-200 hover:bg-emerald-300/75" href="/pages/create">
             Add a ponysona
           </Link>
