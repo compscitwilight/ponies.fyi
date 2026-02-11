@@ -38,6 +38,9 @@ export default async function RootLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const profile = user ? await prisma.profile.findUnique({ where: { userId: user.id } }) : null;
+  const bannerTextSetting = await prisma.siteSettings.findUnique({
+    where: { key: "BANNER_TEXT" }
+  });
 
   const versionResponse = await fetch("https://api.github.com/repos/compscitwilight/ponies.fyi/commits?per_page=1");
   const commits = await versionResponse.json();
@@ -83,9 +86,9 @@ export default async function RootLayout({
           </div>
 
         </Suspense>
-        {/* <div className="text-center w-full border border-yellow-300 bg-yellow-200/75 py-1 my-2 font-bold">
-          <p>Testing this for development</p>
-        </div> */}
+        {(bannerTextSetting && bannerTextSetting.value && bannerTextSetting.value.length > 0) && <div className="text-center w-full border border-yellow-300 bg-yellow-200/75 py-1 my-2 font-bold">
+          <p>{bannerTextSetting.value}</p>
+        </div>}
         <div className="lg:w-3/4 w-full m-auto mt-8">
           {children}
           <Analytics />
