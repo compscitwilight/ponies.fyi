@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
+import { startOfDay, subDays, endOfDay } from "date-fns";
 import prisma from "lib/prisma";
 import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag, Prisma } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
@@ -7,6 +8,7 @@ import { PageNavigation } from "@/components/search/PageNavigation";
 import { MaxResultsDropdown } from "@/components/search/MaxResultsDropdown";
 import { ShowHiddenResults } from "@/components/search/ShowHiddenResults";
 import { RandomPage } from "@/components/search/RandomPage";
+import { BarGraph } from "@/components/BarGraph";
 
 function PageWarning({ children }: PropsWithChildren) {
   return (
@@ -15,6 +17,35 @@ function PageWarning({ children }: PropsWithChildren) {
         <div className="flex-1">{children}</div>
         <Link className="text-sky-600 font-bold underline" href="/">Close</Link>
       </div>
+    </div>
+  )
+}
+
+async function SiteStatistics() {
+  const totalData = []; // ponysona cnt + revisions cnt
+  for (let i = 29; i >= 0; i--) {
+    const dayStart = startOfDay(subDays(new Date(), i));
+    const dayEnd = endOfDay(dayStart);
+    const [ponysonasCount, revisionsCount] = await Promise.all([
+      prisma.ponysona.count({
+        where: {
+          createdAt: { gte: dayStart, lte: dayEnd }
+        }
+      }),
+      prisma.ponysonaRevision.count({
+        where: {
+          createdAt: { gte: dayStart, lte: dayEnd }
+        }
+      })
+    ])
+
+    totalData.push(ponysonasCount + revisionsCount);
+  }
+
+  return (
+    <div className="mx-16">
+      <p className="font-bold text-center">Submission & revision frequency (past 30 days)</p>
+      <BarGraph series={totalData} />
     </div>
   )
 }
@@ -81,6 +112,22 @@ export default async function HomePage({ searchParams }: {
       {pageState === "auth_error" && <PageWarning>An unexpected error occurred while authenticating.</PageWarning>}
       {pageState === "logged_out" && <PageWarning>Logged out successfully.</PageWarning>}
       {pageState === "unauthorized" && <PageWarning>You are not allowed to access that page.</PageWarning>}
+
+      {page === 1 && <div>
+        <div className="flex flex-col items-center text-center my-6">
+          <h1 className="text-3xl font-bold">ponies.fyi</h1>
+          <p className="mb-2">Open-source, collaborative index of ponysona entries with metadata, tagging, revision history, attribution, and media support.</p>
+          <span className="flex gap-1">
+            <p>Authored by</p>
+            <a
+              href="https://twilight.horse"
+              target="_blank"
+              className="text-sky-600 underline"
+            >compscitwilight (Rust)</a>
+          </span>
+        </div>
+        <SiteStatistics />
+      </div>}
 
       <div className="flex items-center">
         <h1 className="flex-1 text-3xl font-bold">Home</h1>
