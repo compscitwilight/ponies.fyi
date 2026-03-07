@@ -38,6 +38,7 @@ model Ponysona {
     description String?
     status      PonysonaStatus @default(Pending)
     locked      Boolean        @default(false)
+    notable     Boolean        @default(false)
 
     tags        PonysonaTag[]                 @relation("TagName")
     sources     String[]
