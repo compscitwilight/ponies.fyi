@@ -65,7 +65,10 @@ function AboutView({
             {/* Information */}
             <div className="rounded-lg border p-2 border-gray-400/50">
                 <div className="flex items-center mr-4">
-                    <h1 className="flex-1 font-bold text-3xl">{ponysona.primaryName}</h1>
+                    <div className="flex-1 flex items-center gap-2">
+                        <h1 className="font-bold text-3xl">{ponysona.primaryName}</h1>
+                        {ponysona.notable && <NotableBadge />}
+                    </div>
                     <div className="flex items-center gap-2">
                         <Link href={`/${ponysona.slug}/revisions`} className="text-green-600 underline">Revisions</Link>
                         {(user !== null) && <Link className="text-sky-600 underline" href={`/${ponysona.id}/edit`}>Edit</Link>}
@@ -188,8 +191,6 @@ async function RelationshipsView({
             }
         }
     });
-
-    // console.log(relationships)
 
     return (
         <div className="rounded-lg border p-2 border-gray-400/50">
