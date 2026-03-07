@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { Tag } from "./Tag";
+import { NotableBadge } from "./ponysonas/NotableBadge";
 
 export function PonysonaResult({ ponysona }: {
     ponysona: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }
@@ -25,7 +26,10 @@ export function PonysonaResult({ ponysona }: {
                         }
                     </div>}
                 </div>
-                <b className="text-2xl">{ponysona.primaryName}</b>
+                <div className="flex items-center gap-2">
+                    <b className="text-2xl">{ponysona.primaryName}</b>
+                    {ponysona.notable && <NotableBadge />}
+                </div>
                 <div className="flex items-center gap-1">
                     <b className="self-start">Tags:</b>
                     <div className="flex gap-1 flex-wrap">
