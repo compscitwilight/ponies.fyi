@@ -47,6 +47,7 @@ model Ponysona {
     attributes  PonysonaAppearanceAttribute[]
     accessories PonysonaAccessory[]
     derivatives Ponysona[]                    @relation("derivatives")
+    colorTraits PonysonaColorTraits[]
 
     submittedById String?
     submittedBy   Profile? @relation(fields: [submittedById], references: [userId])
@@ -59,6 +60,17 @@ model Ponysona {
 
     relationshipsA PonysonaRelationship[] @relation("PonysonaARel")
     relationshipsB PonysonaRelationship[] @relation("PonysonaBRel")
+}
+
+// used for quicker semantic color search
+model PonysonaColorTraits {
+    ponysonaId String
+    part       String
+    color      String
+
+    ponysona Ponysona @relation(fields: [ponysonaId], references: [id])
+
+    @@unique([ponysonaId, part, color])
 }
 
 enum MediaType {
