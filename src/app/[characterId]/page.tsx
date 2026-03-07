@@ -20,7 +20,7 @@ import { Description } from "@/components/ponysonas/Description";
 import { HexCode } from "@/components/ponysonas/HexCode";
 import { UserLink } from "@/components/users/UserLink";
 import { RelationshipsHierarchy } from "@/components/ponysonas/relationships/RelationshipsHierarchy";
-import Tree from "react-d3-tree";
+import { NotableBadge } from "@/components/ponysonas/NotableBadge";
 
 // designed to be compatible with both attributes and accessories
 function AttributeField({

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Ponysona, PonysonaAppearanceAttribute, PonysonaTag } from "@/generated/client";
 import { Tag } from "./Tag";
+import { NotableBadge } from "./ponysonas/NotableBadge";
 
 export function PonysonaResult({ ponysona }: {
     ponysona: Ponysona & { attributes: Array<PonysonaAppearanceAttribute>, tags: Array<PonysonaTag> }
