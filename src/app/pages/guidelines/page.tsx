@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = {
     title: "Guidelines & FAQ | ponies.fyi",
@@ -54,14 +55,36 @@ export default function GuidelinesPage() {
 
                 <h4 className="text-lg font-bold mt-2">Tags & metadata</h4>
                 <p>Tags on ponies.fyi are descriptive and follow a very procedural manner.
-                    Tags must be consistent and accurate for every entry on ponies.fyi</p>
-                <br />
-                <p>Tags should describe:</p>
+                    Tags must be consistent and accurate for every entry on ponies.fyi. Tags should describe:</p>
                 <ul className="list-disc ml-8">
                     <li>species or form</li>
                     <li>narrative role (if applicable)</li>
                     <li>setting or universe type (if applicable)</li>
                     <li>notable physical or canonical traits</li>
+                </ul>
+            </div>
+            <br />
+            <div>
+                <h2 className="text-2xl font-bold">Notability</h2>
+                <hr className="my-2 h-px border-0 bg-gray-400" />
+                <p>Some entries on ponies.fyi are designated as notable by site administration.
+                    This designation is reserved for ponysonas and fan-created characters that have achieved meaningful recognition within the broader brony fandom,
+                    independent of their creator's own promotion.</p>
+                <br />
+                <p>A character may be considered notable if it meets one or more of the following criteria::</p>
+                <ul className="list-disc ml-8">
+                    <li>the character is recognizable without context to a reasonably active fandom member</li>
+                    <li>the character has a substantial body of fanart or fan content produced by multiple independent creators</li>
+                    <li>the character originated or significantly popularized a species, form, or fandom concept (e.g. <Link className="text-sky-600 underline" href="/echo">Echo</Link>)</li>
+                    <li>the character has documented fandom history, such as appearances in fan wikis, retrospectives, or a significant independent content presence on platforms like Derpibooru</li>
+                </ul>
+                <br />
+                <p>Notable entries receive the following privileges:</p>
+                <ul className="list-disc ml-8">
+                    <li>a protected slug</li>
+                    <li>a notability badge on the entry page</li>
+                    <li>search priority for exact name searches</li>
+                    <li>moderation lock</li>
                 </ul>
             </div>
             <br />
