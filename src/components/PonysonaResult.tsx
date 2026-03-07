@@ -40,11 +40,11 @@ export function PonysonaResult({ ponysona }: {
                     {/* <p>{ponysona.tags.join(", ")}</p> */}
                 </div>
             </div>
-            <div className="self-end text-center mt-2">
+            <div className="flex w-full bg-neutral-300 text-sky-600 underline font-bold self-end mt-2 p-1">
                 <Link
                     href={`/${ponysona.slug}`}
-                    className="text-sky-600 font-bold text-xl underline"
-                >Visit page</Link>
+                    className="text-center font-bold"
+                >visit page for {ponysona.primaryName}</Link>
             </div>
         </div>
     )
