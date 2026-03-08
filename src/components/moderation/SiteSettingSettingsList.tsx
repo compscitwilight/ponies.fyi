@@ -25,10 +25,9 @@ function SiteSetting({ setting }: { setting: SiteSettings }) {
         <div className="flex border border-gray-400/50 p-2">
             <div className="flex flex-1 gap-2">
                 <p>{setting.key}</p>
-                <input
+                <textarea
                     className="border border-gray-400/50 w-[128px]"
                     onChange={(e) => setSettingValue(e.target.value)}
-                    type="text"
                     defaultValue={settingValue || ""}
                     placeholder="Value"
                 />
