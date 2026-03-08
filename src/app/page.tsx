@@ -162,9 +162,8 @@ export default async function HomePage({ searchParams }: {
           </span>
         </div>
         <SiteStatistics />
+        <FeaturedPonysona />
       </div>}
-
-      <FeaturedPonysona />
 
       <div className="flex items-center">
         <h1 className="flex-1 text-3xl font-bold">Home</h1>
