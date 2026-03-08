@@ -62,9 +62,9 @@ async function FeaturedPonysona() {
   const editorialDescription = await prisma.siteSettings.findUnique({ where: { key: "FEATURED_PONYSONA_DESCRIPTION" } });
 
   return (
-    <div className="border border-gray-300 my-4 p-2">
+    <div className="border border-gray-300 my-4 mx-16 p-2">
       <h2 className="text-2xl text-indigo-900 font-bold">Featured Ponysona</h2>
-      <div className="flex">
+      <div className="flex gap-4">
         <img className="object-fit max-h-[256px] max-w-[256px]" src={`/api/ponysonas/${featuredPonysona.value}/preview`} />
         <div className="flex flex-col gap-1 flex-1">
           <div className="flex items-center gap-2">
@@ -72,10 +72,11 @@ async function FeaturedPonysona() {
             {ponysonaInfo.notable && <NotableBadge />}
           </div>
           <hr className="h-px my-2 border-0 bg-gray-300" />
-          <span className="text-lg">
+          <span className="text-xl">
             {editorialDescription?.value?.split("\n").map((nl: string, index: number) => <p key={index}>{nl}</p>)}
           </span>
-          <div className="flex-end mt-auto">
+          <div className="flex flex-wrap flex-end gap-2 mt-auto">
+            <Link className="text-sky-600 underline" href={`/${ponysonaInfo.slug}`}>Visit page</Link>
             <i>Featured Ponysona, {format(editorialDescription?.updatedAt || new Date(), "dd MMMM yyyy")}</i>
           </div>
         </div>
