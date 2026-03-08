@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { PropsWithChildren } from "react";
-import { startOfDay, subDays, endOfDay } from "date-fns";
+import { startOfDay, subDays, endOfDay, format } from "date-fns";
 import prisma from "lib/prisma";
 import { Ponysona, PonysonaAppearanceAttribute, PonysonaStatus, PonysonaTag, Prisma } from "@/generated/client";
 import { PonysonaResult } from "@/components/PonysonaResult";
@@ -9,6 +9,7 @@ import { MaxResultsDropdown } from "@/components/search/MaxResultsDropdown";
 import { ShowHiddenResults } from "@/components/search/ShowHiddenResults";
 import { RandomPage } from "@/components/search/RandomPage";
 import { BarGraph } from "@/components/BarGraph";
+import { NotableBadge } from "@/components/ponysonas/NotableBadge";
 
 function PageWarning({ children }: PropsWithChildren) {
   return (
@@ -46,6 +47,37 @@ async function SiteStatistics() {
     <div className="mx-16">
       <p className="font-bold text-center">Submission & revision frequency (past 30 days)</p>
       <BarGraph series={totalData} />
+    </div>
+  )
+}
+
+// displays the preview of the featured ponysona with an editorial description
+// uses site env variables `FEATURED_PONYSONA` and `FEATURED_PONYSONA_DESCRIPTION`
+async function FeaturedPonysona() {
+  const featuredPonysona = await prisma.siteSettings.findUnique({ where: { key: "FEATURED_PONYSONA" } });
+  if (featuredPonysona === null || !featuredPonysona.value) return <></>;
+  const ponysonaInfo = await prisma.ponysona.findUnique({ where: { id: featuredPonysona.value } });
+  if (ponysonaInfo === null) return <></>;
+
+  const editorialDescription = await prisma.siteSettings.findUnique({ where: { key: "FEATURED_PONYSONA_DESCRIPTION" } });
+
+  return (
+    <div className="border border-gray-300 my-4 p-2">
+      <h2 className="text-2xl text-indigo-900 font-bold">Featured Ponysona</h2>
+      <div className="flex">
+        <img className="object-fit max-h-[384px] max-w-[384px]" src={`/api/ponysonas/${featuredPonysona.value}/preview`} />
+        <div className="flex flex-col gap-1 flex-1">
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold">{ponysonaInfo.primaryName}</h1>
+            {ponysonaInfo.notable && <NotableBadge />}
+          </div>
+          <hr className="h-px my-2 border-0 bg-gray-300" />
+          <p className="text-lg">{editorialDescription?.value}</p>
+          <div className="flex-end mt-auto">
+            <i>Featured Ponysona, {format(editorialDescription?.updatedAt || new Date(), "dd MMMM yyyy")}</i>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -128,6 +160,8 @@ export default async function HomePage({ searchParams }: {
         </div>
         <SiteStatistics />
       </div>}
+
+      <FeaturedPonysona />
 
       <div className="flex items-center">
         <h1 className="flex-1 text-3xl font-bold">Home</h1>
