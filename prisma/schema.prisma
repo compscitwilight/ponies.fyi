@@ -16,6 +16,9 @@ enum PonysonaStatus {
 model SiteSettings {
     key   String  @id
     value String?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 }
 
 model Profile {
