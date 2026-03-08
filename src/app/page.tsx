@@ -65,7 +65,7 @@ async function FeaturedPonysona() {
     <div className="border border-gray-300 my-4 p-2">
       <h2 className="text-2xl text-indigo-900 font-bold">Featured Ponysona</h2>
       <div className="flex">
-        <img className="object-fit max-h-[384px] max-w-[384px]" src={`/api/ponysonas/${featuredPonysona.value}/preview`} />
+        <img className="object-fit max-h-[256px] max-w-[256px]" src={`/api/ponysonas/${featuredPonysona.value}/preview`} />
         <div className="flex flex-col gap-1 flex-1">
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-bold">{ponysonaInfo.primaryName}</h1>
