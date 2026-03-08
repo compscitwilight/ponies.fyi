@@ -72,7 +72,9 @@ async function FeaturedPonysona() {
             {ponysonaInfo.notable && <NotableBadge />}
           </div>
           <hr className="h-px my-2 border-0 bg-gray-300" />
-          <p className="text-lg">{editorialDescription?.value}</p>
+          <span className="text-lg">
+            {editorialDescription?.value?.split("\n").map((nl: string, index: number) => <p key={index}>{nl}</p>)}
+          </span>
           <div className="flex-end mt-auto">
             <i>Featured Ponysona, {format(editorialDescription?.updatedAt || new Date(), "dd MMMM yyyy")}</i>
           </div>
