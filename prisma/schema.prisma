@@ -66,15 +66,15 @@ model Ponysona {
     relationshipsB PonysonaRelationship[] @relation("PonysonaBRel")
 }
 
-// used for quicker semantic color search
+// used for color browsing
 model PonysonaColorTraits {
     ponysonaId String
     part       String
-    color      String
+    colors     String[]
 
     ponysona Ponysona @relation(fields: [ponysonaId], references: [id])
 
-    @@unique([ponysonaId, part, color])
+    @@unique([ponysonaId, part])
 }
 
 enum MediaType {
