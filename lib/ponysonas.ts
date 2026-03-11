@@ -1,5 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { object, string, array, number, mixed } from "yup";
+import namer from "color-namer";
 import prisma from "./prisma";
 import { MediaType, Ponysona, BodyPart, Pattern, Prisma, PonysonaTag } from "@/generated/client";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
@@ -62,7 +63,7 @@ export interface RevisionSnapshot {
     }>,
     media: {
         preview?: string,
-        mark?: string 
+        mark?: string
     }
 }
 
@@ -122,12 +123,34 @@ export async function generatePonysonaSlug(primaryName: string) {
         .replaceAll(" ", "_");
     const existingPonysonaCnt = await prisma.ponysona.count({ where: { primaryName } });
     const rnd = randomBytes(2).toString("hex");
-    
+
     let slug = normalizedName;
     if (existingPonysonaCnt > 0)
         slug = slug.concat(existingPonysonaCnt.toString());
     slug = slug.concat("_", rnd);
     return slug;
+}
+
+export async function generatePonysonaColorNames(transaction: TransactionClient, ponysona: Ponysona) {
+    await transaction.ponysonaColorTraits.deleteMany({ where: { ponysonaId: ponysona.id } });
+
+    const appearanceAttributes = await transaction.ponysonaAppearanceAttribute.findMany({
+        where: { ponysonaId: ponysona.id }
+    });
+
+    for (const appearanceAttribute of appearanceAttributes) {
+        const colorNames = appearanceAttribute.colors
+            .map((hex: string) => namer(hex, { pick: ["html"] }))
+            .map((n) => n.html[0].name);
+
+        await transaction.ponysonaColorTraits.create({
+            data: {
+                ponysonaId: ponysona.id,
+                part: appearanceAttribute.bodyPart,
+                colors: colorNames
+            }
+        });
+    }
 }
 
 export async function getPonysonaPreview(ponysona: Ponysona) {
