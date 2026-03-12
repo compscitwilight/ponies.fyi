@@ -10,13 +10,19 @@ export function ColorDropdown({
     onChange?: (color: string) => void
 }) {
     const [selected, setSelected] = useState<string>();
+    const [colorName, setColorName] = useState<string>();
     const [active, setActive] = useState<boolean>(false);
 
 
     useEffect(() => {
         setActive(false);
+
         if (onChange && selected && selected.length > 0) {
-            onChange(selected);
+            for (const [name, hex] of Object.entries(colors))
+                if (hex === selected) {
+                    setColorName(name);
+                    onChange(name);
+                }
         }
     }, [selected])
 
@@ -27,7 +33,7 @@ export function ColorDropdown({
                     {selected ? (
                         <>
                             <div className="w-[12px] h-[12px]" style={{ backgroundColor: selected }} />
-                            <p>{selected}</p>
+                            <p>{colorName}</p>
                         </>
                     ) : <p>Select a color</p>}
                 </div>
