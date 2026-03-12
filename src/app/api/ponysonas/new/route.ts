@@ -6,7 +6,7 @@ import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { MediaStatus, Pattern } from "@/generated/enums";
 
 import prisma from "lib/prisma";
-import { generatePonysonaSlug } from "lib/ponysonas";
+import { generatePonysonaColorNames, generatePonysonaSlug } from "lib/ponysonas";
 import { StatusMessages } from "lib/errors";
 import { PonysonaBody as NewPonysonaBody, HexColorRegex } from "lib/ponysonas";
 import { createClient, getUserProfile } from "lib/supabase";
@@ -118,6 +118,7 @@ export async function POST(request: Request) {
                 }
             }
 
+            await generatePonysonaColorNames(tx, newPonysona);
             return NextResponse.json(newPonysona, { status: 200 });
         })
     } catch (error) {

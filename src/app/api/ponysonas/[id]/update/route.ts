@@ -7,7 +7,8 @@ import { StatusMessages } from "lib/errors";
 import {
     PonysonaBody as UpdatePonysonaBody,
     HexColorRegex,
-    createPonysonaRevision
+    createPonysonaRevision,
+    generatePonysonaColorNames
 } from "lib/ponysonas";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { BodyPart, MediaStatus, MediaType } from "@/generated/enums";
@@ -156,6 +157,7 @@ export async function PUT(
             }
 
             await createPonysonaRevision(tx, ponysona, user);
+            await generatePonysonaColorNames(tx, ponysona);
             return NextResponse.json(
                 { message: "Updated ponysona" },
                 { status: 200 }

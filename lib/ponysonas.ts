@@ -1,9 +1,12 @@
 import { randomBytes } from "node:crypto";
 import { object, string, array, number, mixed } from "yup";
+import namer from "color-namer";
 import prisma from "./prisma";
 import { MediaType, Ponysona, BodyPart, Pattern, Prisma, PonysonaTag } from "@/generated/client";
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { User } from "@supabase/supabase-js";
+
+import NTCGroups from "./ntc-groups.json";
 
 const PonysonaAttributeBody = object({
     part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
@@ -62,7 +65,7 @@ export interface RevisionSnapshot {
     }>,
     media: {
         preview?: string,
-        mark?: string 
+        mark?: string
     }
 }
 
@@ -122,12 +125,39 @@ export async function generatePonysonaSlug(primaryName: string) {
         .replaceAll(" ", "_");
     const existingPonysonaCnt = await prisma.ponysona.count({ where: { primaryName } });
     const rnd = randomBytes(2).toString("hex");
-    
+
     let slug = normalizedName;
     if (existingPonysonaCnt > 0)
         slug = slug.concat(existingPonysonaCnt.toString());
     slug = slug.concat("_", rnd);
     return slug;
+}
+
+export async function generatePonysonaColorNames(transaction: TransactionClient, ponysona: Ponysona) {
+    await transaction.ponysonaColorTraits.deleteMany({ where: { ponysonaId: ponysona.id } });
+
+    const appearanceAttributes = await transaction.ponysonaAppearanceAttribute.findMany({
+        where: { ponysonaId: ponysona.id }
+    });
+
+    for (const appearanceAttribute of appearanceAttributes) {
+        const colorNames = appearanceAttribute.colors
+            .map((hex: string) => namer(hex, { pick: ["ntc"] }))
+            .map((n) => n.ntc[0].hex)
+            .map((hex: string) => {
+                for (const [key, colors] of Object.entries(NTCGroups))
+                    if (colors.includes(hex)) return key;
+                return "";
+            })
+
+        await transaction.ponysonaColorTraits.create({
+            data: {
+                ponysonaId: ponysona.id,
+                part: appearanceAttribute.bodyPart,
+                colors: [...new Set(colorNames)]
+            }
+        });
+    }
 }
 
 export async function getPonysonaPreview(ponysona: Ponysona) {
