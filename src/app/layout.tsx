@@ -60,8 +60,9 @@ export default async function RootLayout({
               </div>
               <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center flex-wrap">
                 <Link href="/">[ Home ]</Link>
+                <Link href="/browse">[ Browse ]</Link>
                 {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>}
-                <Link href="/pages/guidelines">[ Guidelines & FAQ ]</Link>
+                <Link href="/pages/guidelines">[ Guidelines ]</Link>
                 {profile?.isAdmin && <Link href="/pages/moderation">[ Moderation ]</Link>}
               </div>
               {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}
