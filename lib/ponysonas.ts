@@ -6,6 +6,8 @@ import { MediaType, Ponysona, BodyPart, Pattern, Prisma, PonysonaTag } from "@/g
 import { TransactionClient } from "@/generated/internal/prismaNamespace";
 import { User } from "@supabase/supabase-js";
 
+import NTCGroups from "./ntc-groups.json";
+
 const PonysonaAttributeBody = object({
     part: mixed<BodyPart>().oneOf(Object.values(BodyPart)).required(),
     colors: array(string().required()).required(),
@@ -140,14 +142,19 @@ export async function generatePonysonaColorNames(transaction: TransactionClient,
 
     for (const appearanceAttribute of appearanceAttributes) {
         const colorNames = appearanceAttribute.colors
-            .map((hex: string) => namer(hex, { pick: ["html"] }))
-            .map((n) => n.html[0].name);
+            .map((hex: string) => namer(hex, { pick: ["ntc"] }))
+            .map((n) => n.ntc[0].hex)
+            .map((hex: string) => {
+                for (const [key, colors] of Object.entries(NTCGroups))
+                    if (colors.includes(hex)) return key;
+                return "";
+            })
 
         await transaction.ponysonaColorTraits.create({
             data: {
                 ponysonaId: ponysona.id,
                 part: appearanceAttribute.bodyPart,
-                colors: colorNames
+                colors: [...new Set(colorNames)]
             }
         });
     }
