@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { BodyPart } from "@/generated/enums";
 import prisma from "lib/prisma";
 import { NewColorFilter } from "@/components/ponysonas/browse/NewColorFilter";
@@ -7,6 +8,10 @@ import { ActiveFilter } from "@/components/ponysonas/browse/ActiveFilter";
 interface BrowseColorFilter {
     part: BodyPart,
     color: string
+}
+
+export const metadata: Metadata = {
+    title: "Browse by color | ponies.fyi"
 }
 
 export default async function BrowseByColorPage({

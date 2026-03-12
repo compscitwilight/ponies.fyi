@@ -1,4 +1,9 @@
+import { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+    title: "Browse | ponies.fyi"
+}
 
 export default function BrowsePage() {
     return (
@@ -11,7 +16,7 @@ export default function BrowsePage() {
                     <div className="flex-1">
                         <Link
                             className="text-xl font-bold text-sky-600 underline"
-                            href="/browse/colors"
+                            href="/browse/color"
                         >Browse ponysonas by color</Link>
                         <p className="text-lg">
                             Find ponysonas by the colors of their physical attributes
