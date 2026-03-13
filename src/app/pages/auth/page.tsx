@@ -15,7 +15,7 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "discord",
             options: {
-                redirectTo: `${process.env.NEXT_PUBLIC_APP_ENV === "production" ? "https://ponies.fyi" : "http://localhost:3000"}/api/auth/callback?next=/`
+                redirectTo: `${window.location.protocol}//${window.location.host}/api/auth/callback?next=/`
             }
         });
 
