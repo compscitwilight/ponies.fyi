@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createRouterClient } from "lib/supabase";
+import { createRouterClient, getUserProfile } from "lib/supabase";
+import { createUserProfile } from "lib/accounts";
 
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
@@ -23,6 +24,17 @@ export async function GET(request: Request) {
     if (error) {
         console.error(error);
         return NextResponse.redirect(`${origin}/?state=auth_error`);
+    }
+
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user !== null) {
+            const existingProfile = await getUserProfile(user);
+            if (existingProfile === null) await createUserProfile(user);
+            else console.log("Existing profile found.");
+        } else console.warn("Failed to retrieve user.");
+    } catch (error) {
+        console.log(`Failed to initialize user profile - ${error}`);
     }
 
     return response;
