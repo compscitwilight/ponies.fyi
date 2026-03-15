@@ -53,7 +53,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Suspense>
-          <div className="flex flex-col lg:flex-row lg:w-2/3 pb-4 m-auto border-b border-gray-400/50">
+          <div className="flex flex-col lg:flex-row w-2/3 pb-4 m-auto">
             <div className="flex flex-col lg:flex-row flex-1 items-center gap-4">
               <div className="flex items-center gap-1">
                 <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
