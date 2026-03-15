@@ -32,8 +32,8 @@ function AttributeField({
             <div className="flex flex-2 gap-2 items-center">
                 <p>{pattern}</p>
                 {
-                    colors.map((color: string) =>
-                        <HexCode color={color} />
+                    colors.map((color: string, index: number) =>
+                        <HexCode key={index} color={color} />
                     )
                 }
             </div>

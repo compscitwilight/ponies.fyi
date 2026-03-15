@@ -137,22 +137,22 @@ export async function PUT(
 
                     const existingMediaObject = await tx.media.findFirst({
                         where: {
-                            id: ponysona.id,
+                            ponysonaId: ponysona.id,
                             type: key as MediaType
                         }
                     });
 
-                    if (existingMediaObject !== null && uuid === null) {
+                    if (existingMediaObject !== null) {
                         await tx.media.update({
                             where: { id: existingMediaObject.id },
                             data: { ponysonaId: null, status: MediaStatus.finalized }
                         });
-                    } else {
-                        await tx.media.update({
-                            where: { id: uuid as string },
-                            data: { ponysonaId: ponysona.id, status: MediaStatus.uploaded }
-                        })
                     }
+                    
+                    await tx.media.update({
+                        where: { id: uuid as string },
+                        data: { ponysonaId: ponysona.id, status: MediaStatus.uploaded }
+                    })
                 }
             }
 

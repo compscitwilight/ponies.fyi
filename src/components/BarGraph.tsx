@@ -6,6 +6,7 @@ export function BarGraph({ series }: { series: Array<number> }) {
         const heightPercent = (num / maxValue) * 100;
         return (
             <div
+                key={index}
                 title={String(num)}
                 className="w-full bg-indigo-400 transition-all duration-300"
                 style={{ height: `${heightPercent}%` }}

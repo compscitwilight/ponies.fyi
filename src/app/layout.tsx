@@ -4,8 +4,9 @@ import { Analytics } from "@vercel/analytics/next"
 
 import Link from "next/link";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Plus, Github } from "lucide-react";
+import { Plus, Github, Wrench } from "lucide-react";
 import { SearchBox } from "@/components/SearchBox";
+import { AccountNav } from "@/components/topbar/AccountNav";
 import "./globals.css";
 
 import { createClient } from "lib/supabase";
@@ -42,9 +43,9 @@ export default async function RootLayout({
     where: { key: "BANNER_TEXT" }
   });
 
-  const versionResponse = await fetch("https://api.github.com/repos/compscitwilight/ponies.fyi/commits?per_page=1");
-  const commits = await versionResponse.json();
-  const { sha } = commits[0] || { sha: "" };
+  // const versionResponse = await fetch("https://api.github.com/repos/compscitwilight/ponies.fyi/commits?per_page=1");
+  // const commits = await versionResponse.json();
+  // const { sha } = commits[0] || { sha: "" };
 
   return (
     <html lang="en">
@@ -52,7 +53,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <Suspense>
-          <div className="flex flex-col lg:flex-row lg:w-2/3 pb-4 m-auto border-b border-gray-400/50">
+          <div className="flex flex-col lg:flex-row w-2/3 pb-4 m-auto">
             <div className="flex flex-col lg:flex-row flex-1 items-center gap-4">
               <div className="flex items-center gap-1">
                 <img className="object-fit w-[64px] -m-4" src="/derpy.png" />
@@ -61,15 +62,22 @@ export default async function RootLayout({
               <div className="text-sky-600 underline text-lg flex flex-col lg:flex-row gap-2 items-center flex-wrap">
                 <Link href="/">[ Home ]</Link>
                 <Link href="/browse">[ Browse ]</Link>
-                {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>}
+                {/* {user ? <Link href="/pages/auth/logout">[ Logout ]</Link> : <Link href="/pages/auth">[ Login ]</Link>} */}
                 <Link href="/pages/guidelines">[ Guidelines ]</Link>
-                {profile?.isAdmin && <Link href="/pages/moderation">[ Moderation ]</Link>}
+                {user ? <AccountNav user={user} profile={profile} /> : <Link href="/pages/auth">[ Login ]</Link>}
               </div>
               {/* <p className="self-end mb-2">An open-source index for discovering and referencing ponysonas</p> */}
             </div>
             <div className="flex flex-col lg:flex-row items-center gap-4 mr-4">
               <SearchBox />
               <div className="flex gap-1">
+                {profile?.isAdmin && <Link
+                  title="Moderation panel"
+                  className="text-orange-500 hover:text-orange-300 transition-text duration-200"
+                  href="/pages/moderation"
+                >
+                  <Wrench />
+                </Link>}
                 <a href="/pages/create" title="Add pony" className="cursor-pointer">
                   <Plus />
                 </a>
@@ -80,7 +88,7 @@ export default async function RootLayout({
                   className="flex items-center gap-1 cursor-pointer transition-text duration-200 hover:text-blue-500"
                 >
                   <Github />
-                  <p>{sha.slice(0, 7)}</p>
+                  {/* <p>{sha.slice(0, 7)}</p> */}
                 </a>
               </div>
             </div>

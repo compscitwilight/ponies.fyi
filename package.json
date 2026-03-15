@@ -11,8 +11,11 @@
     "setup": "npm install && npx prisma generate && next build"
   },
   "dependencies": {
+    "@aws-sdk/s3-request-presigner": "^3.1009.0",
+    "@aws-sdk/types": "^3.973.6",
     "@supabase/ssr": "^0.8.0",
     "@supabase/supabase-js": "^2.91.1",
+    "aws-sdk-js-v3": "^0.0.2",
     "color-namer": "^1.4.0",
     "d3": "^7.9.0",
     "dotenv": "^17.3.1",
@@ -39,7 +42,6 @@
     "@types/react-dom": "^19",
     "@types/tinycolor2": "^1.4.6",
     "@vercel/analytics": "^1.6.1",
-    "aws-sdk": "^2.1693.0",
     "bytes": "^3.1.2",
     "date-fns": "^4.1.0",
     "tailwindcss": "^4",
