@@ -23,7 +23,8 @@ model SiteSettings {
 
 model Profile {
     userId                 String     @id
-    alias                  String?
+    alias                  String?    @db.VarChar(30)
+    bio                    String?    @db.VarChar(5000)
     isAdmin                Boolean    @default(false)
     canUpload              Boolean    @default(true) // only applies to gallery images
     canRemoveGalleryImages Boolean    @default(true)
