@@ -65,7 +65,7 @@ export default async function UserProfilePage({ params }: {
             <div className="mt-4">
                 <h2 className="text-xl font-bold">About</h2>
                 <hr className="my-2 h-px border-0 bg-gray-400/50" />
-                {profile.bio ? <p>{profile.bio}</p> : <i>No bio specified.</i>}
+                {profile.bio ? <span>{profile.bio}</span> : <i>No bio specified.</i>}
             </div>
         </div>
     )
