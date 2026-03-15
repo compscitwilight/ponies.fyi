@@ -3,6 +3,8 @@ import prisma from "lib/prisma";
 import { createClient } from "lib/supabase";
 import { redirect } from "next/navigation";
 
+import { UserAvatar } from "@/components/users/UserAvatar";
+
 async function getUserProfileByID(id: string) {
     return await prisma.profile.findFirst({
         where: {
@@ -20,7 +22,7 @@ export async function generateMetadata({ params }: {
     const { identifier } = await params;
     const profile = await getUserProfileByID(identifier);
     if (profile) return {
-        title: `${profile.alias || `User ${profile.userId}`} | ponies.fyi`
+        title: `${profile.alias || `User ${profile.userId}`}'s Profile | ponies.fyi`
     };
 }
 
@@ -28,6 +30,8 @@ export default async function UserProfilePage({ params }: {
     params: Promise<{ identifier: string }>
 }) {
     const { identifier } = await params;
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser(); 
     const profile = await getUserProfileByID(identifier);
 
     if (profile === null)
@@ -39,6 +43,7 @@ export default async function UserProfilePage({ params }: {
     return (
         <div>
             <div className="p-2 border border-gray-400/50 rounded-md">
+            <UserAvatar profile={profile} canModify={user?.id === profile.userId} />
                 <div className="flex gap-2 items-center">
                     <h2 className="text-2xl font-bold">{profile.alias || `User ${profile.userId}`}</h2>
                     {profile.isAdmin &&
