@@ -1,12 +1,14 @@
-import SDK from "aws-sdk";
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-const s3 = new SDK.S3({
+const s3 = new S3Client({
     endpoint: process.env.BUCKET_ENDPOINT,
+    region: "auto",
     credentials: {
         accessKeyId: process.env.ACCESS_KEY_ID as string,
         secretAccessKey: process.env.SECRET_ACCESS_KEY as string
     },
-    signatureVersion: "v4"
+    // signatureVersion: "v4"
 });
 
 /**
@@ -19,12 +21,18 @@ export async function generatePresignedUploadURL(
     mediaObjectUUID: string,
     mime: string
 ) {
-    const url = await s3.getSignedUrlPromise("putObject", {
+    const command = new PutObjectCommand({
         Bucket: process.env.BUCKET_NAME,
-        Key: mediaObjectUUID,
-        Expires: 3000,
-        ContentType: mime
+        Key: mediaObjectUUID
+    })
+
+    const url = await getSignedUrl(s3, command, {
+        expiresIn: 3000
     });
 
     return url;
+}
+
+export async function moveObject(source: string, destination: string) {
+    
 }
