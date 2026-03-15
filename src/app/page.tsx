@@ -77,7 +77,7 @@ async function FeaturedPonysona() {
           </span>
           <div className="flex flex-wrap flex-end gap-2 mt-auto">
             <Link className="text-sky-600 underline" href={`/${ponysonaInfo.slug}`}>Visit page</Link>
-            <i>Featured Ponysona, {format(editorialDescription?.updatedAt || new Date(), "dd MMMM yyyy")}</i>
+            <i>Featured Ponysona of the week, {format(editorialDescription?.updatedAt || new Date(), "dd MMMM yyyy")}</i>
           </div>
         </div>
       </div>
