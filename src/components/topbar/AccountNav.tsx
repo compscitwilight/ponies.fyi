@@ -22,6 +22,10 @@ export function AccountNav({ user, profile }: {
                         href="/pages/submissions"
                     >Your submissions</Link>
                     <Link
+                        className="hover:bg-gray-300/50 transition-bg duration-200"
+                        href="/pages/settings"
+                    >Settings</Link>
+                    <Link
                         className="hover:bg-gray-300/50 transition-bg text-red-700 duration-200"
                         href="/pages/auth/logout"
                     >Logout</Link>
